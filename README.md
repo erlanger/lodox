@@ -1,4 +1,4 @@
-lodox 0.12.5
+lodox 0.12.6
 ========
 
 The LFE rebar3 Lodox plugin
