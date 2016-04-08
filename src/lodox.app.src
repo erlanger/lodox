@@ -5,12 +5,13 @@
 
 {application,    'lodox',
  [{description,  "The LFE rebar3 Lodox plugin"},
-  {vsn,          "0.8.0"},
+  {vsn,          "0.12.11"},
   {modules,      [lodox,
                   'lodox-html-writer', 'lodox-p', 'lodox-parse', 'lodox-util',
                   'unit-lodox-tests']},
   {registered,   []},
   {applications, [kernel, stdlib]},
-  {env,
-   [{'source-uri',
-     "https://github.com/quasiquoting/lodox/blob/master/{filepath}#L{line}"}]}]}.
+  {env,          []},
+  {links,
+   [{"Homepage", "https://github.com/quasiquoting/lodox"},
+    {"Documentation", "http://quasiquoting.org/lodox"}]}]}.

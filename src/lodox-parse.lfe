@@ -12,7 +12,7 @@
           (script-doc 1)
           (documented 1))
   (import (from lodox-p
-            (arglist? 1)
+            (arglist? 1) (arg? 1)
             (macro-clauses? 1) (macro-clause? 1)
             (clauses? 1) (clause? 1)
             (string? 1)
@@ -33,7 +33,7 @@
 
 ```commonlisp
 '#m(name        #\"lodox\"
-    version     \"0.8.0\"
+    version     \"0.12.11\"
     description \"The LFE rebar3 Lodox plugin\"
     documents   ()
     modules     {{list of maps of module metadata}}
@@ -57,7 +57,6 @@
         documented  ,documented)))
 
 (defun form-doc
-  "TODO: write docstring"
   ;; (defun name clause)
   ([(= `(defun ,name ,(= `[,arglist . ,_body] clause)) shape)]
    (when (is_atom name) (is_list arglist))
@@ -103,15 +102,17 @@
 
   ;; (defun name <doc|clause> clause     ...)
   ;; (defun name arglist      <doc|form> ...)
-  ([`(defun ,name ,doc-or-arglist . ,(= `[,x . ,_] rest))]
+  ([`(defun ,name ,x . ,(= `[,y . ,_] rest))]
    (when (is_atom name))
    (cond
     ((clauses? rest)
-     (ok-form-doc name (length (car x)) (patterns rest)
-                  (if (string? doc-or-arglist) doc-or-arglist "")))
-    ((arglist? doc-or-arglist)
-     (ok-form-doc name (length doc-or-arglist)
-                  `[,doc-or-arglist] (if (string? x) x "")))))
+     (if (clause? x)
+       (ok-form-doc name (length (car x)) (patterns `(,x . ,rest)) "")
+       (ok-form-doc name (length (car y))
+                    (patterns rest)
+                    (if (string? x) x ""))))
+    ((arglist? x)
+     (ok-form-doc name (length x) `[,x] (if (string? y) y "")))))
 
   ;; (defun ...)
   ([(= `(defun . ,_) shape)]
@@ -123,9 +124,6 @@
 
   ;; This pattern matches non-def{un,macro} forms.
   ([_] 'undefined))
-
-(defun ok-form-doc (name arity arglists doc)
-  `#(ok #m(name ,name arity ,arity arglists ,arglists doc ,doc)))
 
 (defun form-doc (form line)
   "Equivalent to [[form-doc/3]] with `[]` as `exports`."
@@ -139,29 +137,79 @@
     ('undefined 'false)))
 
 (defun macro-doc
-  "TODO: write docstring"
   ;; (defmacro name clause)
   ([(= `(defmacro ,name ,clause) shape)]
    (when (is_atom name))
+   (if (macro-clause? clause)
+     (let ((arity (if (clause? clause) (length (car clause)) 255)))
+       (ok-form-doc name arity `[,(pattern clause)] ""))
+     (unhandled-shape! shape)))
+
+  ;; (defmacro name () form)
+  ([`(defmacro ,name () ,_form)]
+   (when (is_atom name))
+   (ok-form-doc name 0 '[()] ""))
+
+  ;; (defmacro name <doc|clause> clause)
+  ;; (defmacro name arglist      form)
+  ;; (defmacro name varargs      form)
+  ([`(defmacro ,name . ,(= `[,x ,y] rest))]
+   (when (is_atom name))
    (cond
-    ((clause? clause)
-     (ok-form-doc name (length (car clause)) `[,(pattern clause)] ""))
-    ((macro-clause? clause)
-     (ok-form-doc name 255 '[(...)] ""))
-    ('true
-     (unhandled-shape! shape))))
-  ;; (defmacro name doc clause ...?)
+    ((andalso (string? x) (macro-clause? y))
+     (if (clause? x)
+       (ok-form-doc name (length (car y)) `[,(pattern y)] x)
+       (ok-form-doc name 255 `[,(pattern y)] x)))
+    ((arglist? x)
+     (ok-form-doc name (length x) `[,x] ""))
+    ((macro-clauses? rest)
+     (if (clause? x)
+       (ok-form-doc name (length (car x)) (patterns rest) "")
+       (ok-form-doc name 255 (patterns rest) "")))
+    ((arg? x)
+     (ok-form-doc name 255 `[(,x ...)] ""))))
+
+  ;; (defmacro name doc clause)
+  ([(= `(defmacro ,name ,doc-string ,(= `[,arglist . ,_body] clause)) shape)]
+   (when (is_atom name) (is_list doc-string) (is_list arglist))
+   (if (andalso (macro-clause? clause) (string? doc-string))
+     (let ((arity (if (clause? clause) (length arglist) 255)))
+       (ok-form-doc name arity `[,(pattern clause)] doc-string))
+     (unhandled-shape! shape)))
+
+  ;; (defmacro name () <doc|form> form)
+  ([`(defmacro ,name () ,maybe-doc ,_form)]
+   (when (is_atom name))
+   (ok-form-doc name 0 '[()] (if (string? maybe-doc) maybe-doc "")))
+
+  ;; (defmacro name "" clause clause ...?)
+  ;; (defmacro name () doc    form   ...?)
+  ([(= `(defmacro ,name () . ,(= `[,x . ,_] rest)) shape)]
+   (if (macro-clauses? rest)
+     (let ((arity (if (clause? x) (length x) 255)))
+       (ok-form-doc name arity (patterns rest) ""))
+     (ok-form-doc name 0 '[()] (if (string? x) x ""))))
+
+  ;; (defmacro name <doc|clause> clause ...)
+  ;; (defmacro name arglist      <doc|form> ...)
   ([(= `(defmacro ,name ,x . ,(= `[,y . ,_] rest)) shape)]
    (when (is_atom name))
    (cond
-    ((andalso (string? x) (macro-clauses? rest))
-     (if (clause? y)
-       (ok-form-doc name (length (car y)) (patterns rest) x)
-       (ok-form-doc name 255 '[(...)] x)))
-    ((arglist? x)
+    ((andalso (not (string? x)) (arglist? x))
      (ok-form-doc name (length x) `[,x] (if (string? y) y "")))
-    ('true
-     (unhandled-shape! shape))))
+    ((macro-clauses? rest)
+     (cond
+      ((andalso (not (string? x)) (macro-clause? x))
+       (let ((arity (if (clause? x) (length (car x)) 255)))
+         (ok-form-doc name arity (patterns `(,x . ,rest)) "")))
+      ((macro-clause? x)
+       (let ((arity (if (clause? x) (length (car x)) 255)))
+         (ok-form-doc name arity (patterns rest) (if (string? x) x ""))))
+      ('true
+       (let ((arity (if (clause? y) (length (car y)) 255)))
+         (ok-form-doc name arity (patterns rest) (if (string? x) x ""))))))
+    ((arg? x)
+     (ok-form-doc name 255 `[(,x ...)] ""))))
 
   ;; (defmacro ...)
   ([(= `(defmacro . ,_) shape)]
@@ -169,6 +217,9 @@
 
   ;; This pattern matches non-defmacro forms.
   ([_] 'undefined))
+
+(defun ok-form-doc (name arity patterns doc)
+  `#(ok #m(name ,name arity ,arity patterns ,patterns doc ,doc)))
 
 (defun unhandled-shape! (shape)
   "Throw an error with `shape` pretty printed."
@@ -189,7 +240,7 @@ return the list of non-empty results."
 (defun lib-doc (filename)
   "Parse `filename` and attempt to return a tuple, `` `#(true ,defsmap) ``
 where `defsmap` is a map representing the definitions in `filename`.
-If [[file-doc/1]] returns the empty list, return `false`."
+If `file-doc/1` returns the empty list, return `false`."
   (case (filename:extension filename)
     (".lfe" (case (file-doc filename)
               ('()     'false)
@@ -213,6 +264,14 @@ If [[file-doc/1]] returns the empty list, return `false`."
     '()))
 
 (defun documented (modules)
+  "Given a list of parsed modules, return a map representing undocumented
+functions therein.
+
+```commonlisp
+(map 'percentage   {{float 0.0-100.0}}
+     'undocumented (map {{module name (atom) }} [\"{{function/arity}}\" ...]
+                        ...))
+```"
   (flet ((percentage
            ([`#(#(,n ,d) ,modules)]
             (->> `[,(* (/ n d) 100)]
@@ -296,7 +355,7 @@ If [[file-doc/1]] returns the empty list, return `false`."
 (defun patterns (forms) (lists:map #'pattern/1 forms))
 
 (defun pattern
-  ([`(,patt ,(= guard `(when . ,_)) . ,_)] `(,@patt ,guard))
+  ([`(,patt ,(= `(when . ,_) guard) . ,_)] `(,@patt ,guard))
   ([`(,arglist . ,_)] arglist))
 
 (defun func-name

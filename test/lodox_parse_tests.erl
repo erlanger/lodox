@@ -27,9 +27,9 @@ parse_test_() ->
     , {"A simple function with a docstring is correctly parsed.",
        prop_defun_simple_doc(), 500}
     , {"A function with pattern clauses produces an empty docstring.",
-       prop_defun_match(), 40}
+       prop_defun_match(), 100}
     , {"A function with pattern clauses and a docstring is correctly parsed.",
-       prop_defun_match_doc(), 30}
+       prop_defun_match_doc(), 100}
     ],
   [{timeout, ?TIMEOUT,
     {Title, ?_assert(proper:quickcheck(Property, ?OPTIONS(NumTests)))}}
@@ -116,10 +116,15 @@ arglist_patterns(Arity) -> vector(Arity, pattern()).
 pattern() -> union([non_string_term(), printable_string(), pattern_form()]).
 
 pattern_form() ->
-  [oneof([backquote, quote, binary, list, map, tuple, match_fun()])
+  [oneof(['=', '++*', [],
+          backquote, quote,
+          binary, cons, list, map, tuple,
+          match_fun()])
    | non_empty(list())].
 
-match_fun() -> ?LET(F, printable_string(), list_to_atom("match-" ++ F)).
+%% Don't waste atoms, since we're already running out.
+%% match_fun() -> ?LET(F, printable_string(), list_to_atom("match-" ++ F)).
+match_fun() -> 'match-record'.
 
 pattern_clause(Arity) ->
   [arglist_patterns(Arity) |
