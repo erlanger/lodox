@@ -36,7 +36,7 @@ Finally, add Lodox to your `project_plugins` list.
  [% ...
   {lodox,
    {git, "git://github.com/lfe-rebar3/lodox.git",
-    {tag, "0.12.12"}}}]}.
+    {tag, "0.12.13"}}}]}.
 ```
 
 # Usage
