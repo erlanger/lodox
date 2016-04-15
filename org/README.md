@@ -114,18 +114,23 @@ branch = gh-pages
 # Application Resource File<a id="orgheadline5"></a>
 
 ```erlang
-{application,    'lodox',
- [{description,  "The LFE rebar3 Lodox plugin"},
-  {vsn,          "0.12.12"},
+{application,    'lodox', [
+  {description,  "The LFE rebar3 Lodox plugin"},
+  {vsn,          "0.12.13"},
   {modules,      [lodox,
                   'lodox-html-writer', 'lodox-p', 'lodox-parse', 'lodox-util',
                   'unit-lodox-tests']},
   {registered,   []},
   {applications, [kernel, stdlib]},
   {env,          []},
-  {links,
-   [{"Homepage", "https://github.com/lfe-rebar3/lodox"},
-    {"Documentation", "http://lfe-rebar3.github.io/lodox"}]}]}.
+
+  {maintainers,  ["Eric Bailey"]},
+  {licenses,     ["MIT"]},
+  {links, [
+    {"Homepage", "https://github.com/lfe-rebar3/lodox"},
+    {"Documentation", "http://lfe-rebar3.github.io/lodox"}
+  ]}
+]}.
 ```
 
 # Rebar3 Configuration<a id="orgheadline21"></a>
@@ -950,7 +955,7 @@ If something goes wrong, throw a descriptive error."
 
 ```commonlisp
 '#m(name        #\"lodox\"
-    version     \"0.12.12\"
+    version     \"0.12.13\"
     description \"The LFE rebar3 Lodox plugin\"
     documents   ()
     modules     {{list of maps of module metadata}}

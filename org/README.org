@@ -10,7 +10,7 @@
 
 
 [[https://travis-ci.org/lfe-rebar3/lodox][file:https://travis-ci.org/lfe-rebar3/lodox.svg]]
-[[file:https://img.shields.io/github/tag/lfe-rebar3/lodox.svg]]
+[[https://hex.pm/packages/lodox][file:https://img.shields.io/hexpm/v/lodox.svg]]
 [[http://www.erlang.org/downloads][file:https://img.shields.io/badge/erlang-%E2%89%A518.0-red.svg]]
 [[http://lfe-rebar3.github.io/lodox][file:https://img.shields.io/badge/docs-91%25-green.svg]]
 [[file:LICENSE][file:https://img.shields.io/badge/license-MIT-blue.svg]]
@@ -33,26 +33,25 @@ Requires Erlang 18.x or later.
 First, make sure you have the [[https://github.com/lfe-rebar3/compile][lfe-compile]] plugin as a dependency in your
 project's =rebar.config=:
 #+BEGIN_SRC erlang
-{plugins,
- [{'lfe-compile',
+{plugins, [
+  {'lfe-compile',
    {git, "git://github.com/lfe-rebar3/compile.git",
-    {tag, "0.3.0"}}}]}
+    {tag, "0.3.0"}}}
+]}.
 #+END_SRC
 
 Then in your project's =rebar.config=, include the [[https://www.rebar3.org/v3.0/docs/configuration#section-provider-hooks][provider pre-hook]]:
 #+BEGIN_SRC erlang
-{provider_hooks,
- [{pre, [{compile, {lfe, compile}}]}]}
+{provider_hooks, [{pre, [{compile, {lfe, compile}}]}]}
 #+END_SRC
 
 Finally, add Lodox to your =project_plugins= list.
 # preferably inside a =doc= [[https://www.rebar3.org/docs/profiles][profile]]
 #+BEGIN_SRC erlang
-{project_plugins,
- [% ...
-  {lodox,
-   {git, "git://github.com/lfe-rebar3/lodox.git",
-    {tag, "<<lodox-version()>>"}}}]}.
+{project_plugins, [
+  %% ...
+  {lodox, "<<lodox-version()>>"}
+]}.
 #+END_SRC
 
 * Usage
@@ -102,22 +101,26 @@ your project.
 
 # Optionally, you can add Lodox as a =compile= [[https://www.rebar3.org/v3.0/docs/configuration#section-provider-hooks][post-hook]]:
 # #+BEGIN_SRC erlang
-# {provider_hooks,
-#  [{pre,  [{compile, {lfe, compile}}]},
-#   {post, [{compile, {lfe, lodox}]}]}.
+# {provider_hooks, [
+#   {pre,  [{compile, {lfe, compile}}]},
+#   {post, [{compile, {lfe, lodox}}]}
+# ]}.
 # #+END_SRC
 
 ** Source Links
 /[ Modified from [[https://github.com/weavejester/codox#source-links][Codox documentation]]. ]/
+
+# TODO: update this
 
 If you have the source available at a URI and would like to have links to the
 function/macro's source file in the documentation, you can set the ~​'source-uri'​~
 [[http://www.erlang.org/doc/design_principles/applications.html#id76014][configuration parameter]] in your [[http://www.erlang.org/doc/design_principles/applications.html#id75484][application resource file]].
 
 #+BEGIN_SRC erlang
-{env,
- [{'source-uri',
-   "https://github.com/foo/bar/blob/{version}/{filepath}#L{line}"}]}
+{env, [
+  {'source-uri',
+   "https://github.com/foo/bar/blob/{version}/{filepath}#L{line}"}
+]}
 #+END_SRC
 
 The URI is a template that may contain the following keys:

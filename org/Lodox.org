@@ -114,8 +114,8 @@ branch = gh-pages
 "github.com/lfe-rebar3/lodox"
 #+END_SRC
 #+BEGIN_SRC erlang :padline yes :tangle ../src/lodox.app.src
-{application,    'lodox',
- [{description,  "The LFE rebar3 Lodox plugin"},
+{application,    'lodox', [
+  {description,  "The LFE rebar3 Lodox plugin"},
   {vsn,          "<<lodox-version()>>"},
   {modules,      [lodox,
                   'lodox-html-writer', 'lodox-p', 'lodox-parse', 'lodox-util',
@@ -123,9 +123,14 @@ branch = gh-pages
   {registered,   []},
   {applications, [kernel, stdlib]},
   {env,          []},
-  {links,
-   [{"Homepage", "https://<<lodox-github()>>"},
-    {"Documentation", "http://lfe-rebar3.github.io/lodox"}]}]}.
+
+  {maintainers,  ["Eric Bailey"]},
+  {licenses,     ["MIT"]},
+  {links, [
+    {"Homepage", "https://<<lodox-github()>>"},
+    {"Documentation", "http://lfe-rebar3.github.io/lodox"}
+  ]}
+]}.
 #+END_SRC
 
 * Rebar3 Configuration

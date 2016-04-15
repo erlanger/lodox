@@ -1,5 +1,5 @@
 [![img](https://travis-ci.org/lfe-rebar3/lodox.svg)](https://travis-ci.org/lfe-rebar3/lodox)
-![img](https://img.shields.io/github/tag/lfe-rebar3/lodox.svg)
+[![img](https://img.shields.io/hexpm/v/lodox.svg)](https://hex.pm/packages/lodox)
 [![img](https://img.shields.io/badge/erlang-%E2%89%A518.0-red.svg)](http://www.erlang.org/downloads)
 [![img](https://img.shields.io/badge/docs-91%25-green.svg)](http://lfe-rebar3.github.io/lodox)
 [![img](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -16,27 +16,26 @@ First, make sure you have the [lfe-compile](https://github.com/lfe-rebar3/compil
 project's `rebar.config`:
 
 ```erlang
-{plugins,
- [{'lfe-compile',
+{plugins, [
+  {'lfe-compile',
    {git, "git://github.com/lfe-rebar3/compile.git",
-    {tag, "0.3.0"}}}]}
+    {tag, "0.3.0"}}}
+]}.
 ```
 
 Then in your project's `rebar.config`, include the [provider pre-hook](https://www.rebar3.org/v3.0/docs/configuration#section-provider-hooks):
 
 ```erlang
-{provider_hooks,
- [{pre, [{compile, {lfe, compile}}]}]}
+{provider_hooks, [{pre, [{compile, {lfe, compile}}]}]}
 ```
 
 Finally, add Lodox to your `project_plugins` list.
 
 ```erlang
-{project_plugins,
- [% ...
-  {lodox,
-   {git, "git://github.com/lfe-rebar3/lodox.git",
-    {tag, "0.12.12"}}}]}.
+{project_plugins, [
+  %% ...
+  {lodox, "0.12.13"}
+]}.
 ```
 
 # Usage
@@ -75,9 +74,10 @@ function/macro's source file in the documentation, you can set the `​'source-u
 [configuration parameter](http://www.erlang.org/doc/design_principles/applications.html#id76014) in your [application resource file](http://www.erlang.org/doc/design_principles/applications.html#id75484).
 
 ```erlang
-{env,
- [{'source-uri',
-   "https://github.com/foo/bar/blob/{version}/{filepath}#L{line}"}]}
+{env, [
+  {'source-uri',
+   "https://github.com/foo/bar/blob/{version}/{filepath}#L{line}"}
+]}
 ```
 
 The URI is a template that may contain the following keys:
