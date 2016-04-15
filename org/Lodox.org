@@ -176,9 +176,7 @@ TODO: Describe this.
 #+BEGIN_SRC erlang :exports code
 {plugins, [
   rebar3_proper,
-  {'lfe-compile',
-   {git, "git://github.com/lfe-rebar3/compile.git",
-    {tag, "0.3.0"}}}
+  rebar3_lfe_compile
 ]}.
 
 {provider_hooks, [{pre, [{compile, {lfe, compile}}]}]}.
@@ -188,23 +186,16 @@ TODO: Describe this.
 *** Project-wide
 **** lfe
 The first and foremost dependency is, of course, [[https://github.com/rvirding/lfe][LFE]] itself.
-Use the latest version, which as of this writing, is:
-#+NAME: lfe-version
-: 1.0
-
 #+NAME: lfe
 #+BEGIN_SRC erlang
-{lfe,      {git, "git://github.com/rvirding/lfe.git",  {tag, "<<lfe-version()>>"}}}
+lfe
 #+END_SRC
 
 **** clj
 For the Clojure-inspired threading macros, use [[https://github.com/lfex/clj][clj]].
-#+NAME: clj-version
-: 0.4.0
-
 #+NAME: clj
 #+BEGIN_SRC erlang
-{clj,      {git, "git://github.com/lfex/clj.git",      {tag, "<<clj-version()>>"}}}
+clj
 #+END_SRC
 
 **** exemplar
@@ -230,9 +221,7 @@ For markdown: [[https://github.com/erlware/erlmarkdown][erlmarkdown]].
 [[https://github.com/quasiquoting/levaindoc][levaindoc]], LFE wrapper for [[http://pandoc.org][Pandoc]].
 #+NAME: levaindoc
 #+BEGIN_SRC erlang
-{levaindoc,
- {git, "git://github.com/quasiquoting/levaindoc.git",
-  {tag, "0.3.2"}}}
+levaindoc
 #+END_SRC
 
 *** Test profile
