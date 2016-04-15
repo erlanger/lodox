@@ -1,5 +1,5 @@
 [![img](https://travis-ci.org/lfe-rebar3/lodox.svg)](https://travis-ci.org/lfe-rebar3/lodox)
-![img](https://img.shields.io/github/tag/lfe-rebar3/lodox.svg)
+[![img](https://img.shields.io/hexpm/v/lodox.svg)](https://hex.pm/packages/lodox)
 [![img](https://img.shields.io/badge/erlang-%E2%89%A518.0-red.svg)](http://www.erlang.org/downloads)
 [![img](https://img.shields.io/badge/docs-91%25-green.svg)](http://lfe-rebar3.github.io/lodox)
 [![img](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
