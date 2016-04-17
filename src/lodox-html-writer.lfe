@@ -83,7 +83,7 @@ Use [pandoc] if available, otherwise [erlmarkdown].
 [pandoc]: http://pandoc.org
 [erlmarkdown]: https://github.com/erlware/erlmarkdown"
   (case (os:find_executable "pandoc")
-    ('false (markdown:conv_utf8 markdown))
+    ('false (exit "Pandoc is required."))
     (pandoc (let ((`#(ok ,html) (markdown_github->html markdown))) html))))
 
 (defun format-wikilinks

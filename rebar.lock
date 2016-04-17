@@ -3,8 +3,4 @@
  {<<"kla">>,{pkg,<<"kla">>,<<"0.7.0">>},1},
  {<<"levaindoc">>,{pkg,<<"levaindoc">>,<<"0.4.0">>},0},
  {<<"lfe">>,{pkg,<<"lfe">>,<<"1.0.2">>},0},
- {<<"lutil">>,{pkg,<<"lutil">>,<<"1.0.0">>},1},
- {<<"markdown">>,
-  {git,"git://github.com/erlware/erlmarkdown.git",
-       {ref,"8ef862ebf85380a8aedfdd66cdaa26db87a8bc3f"}},
-  0}].
+ {<<"lutil">>,{pkg,<<"lutil">>,<<"1.0.0">>},1}].
