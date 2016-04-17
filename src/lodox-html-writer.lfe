@@ -78,10 +78,10 @@ N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
 
 (defun markdown->html (markdown)
   "Given a Markdown string, convert it to HTML.
-Use [pandoc] if available, otherwise [erlmarkdown].
+  Use [pandoc] if available, otherwise [erlmarkdown].
 
-[pandoc]: http://pandoc.org
-[erlmarkdown]: https://github.com/erlware/erlmarkdown"
+  [pandoc]: http://pandoc.org
+  [erlmarkdown]: https://github.com/erlware/erlmarkdown"
   (case (os:find_executable "pandoc")
     ('false (exit "Pandoc is required."))
     (pandoc (let ((`#(ok ,html) (markdown_github->html markdown))) html))))

@@ -53,7 +53,7 @@
 (defun do (state)
   "Generate documentation for each application in the project.
 
-See: [[lodox-html-writer:write-docs/2]]"
+  See: [[lodox-html-writer:write-docs/2]]"
   (rebar_api:debug "Starting do/1 for lodox" [])
   (let ((apps (rebar_state:project_apps state)))
     (lists:foreach #'write-docs/1 apps))
@@ -73,7 +73,7 @@ so a string can be formatted explaining the issue."
 (defun write-docs (app-info)
   "Given an [app_info_t], call [[lodox-html-writer:write-docs/2]] appropriately.
 
-[app_info_t]: https://github.com/rebar/rebar3/blob/master/src/rebar_app_info.erl"
+  [app_info_t]: https://github.com/rebar/rebar3/blob/master/src/rebar_app_info.erl"
   (let* ((`[,opts ,app-dir ,name ,vsn ,out-dir]
           (lists:map (lambda (f) (call 'rebar_app_info f app-info))
             '[opts dir name original_vsn out_dir]))
@@ -93,7 +93,7 @@ so a string can be formatted explaining the issue."
 (defun generated
   "Print a string of the form:
 
-> Generated {{app-name}} v{{version}} docs in {{output directory}}"
+  > Generated {{app-name}} v{{version}} docs in {{output directory}}"
   ([name `#(cmd ,cmd) doc-dir]
    (generated name (os:cmd (++ cmd " | tr -d \"\\n\"")) doc-dir))
   ([name vsn doc-dir]
@@ -101,7 +101,7 @@ so a string can be formatted explaining the issue."
 
 (defun get-lodox-opts
   "Parse rebar.config for Lodox options.
-If `name` is a binary, convert it to an atom first."
+  If `name` is a binary, convert it to an atom first."
   ([name rebar-opts] (when (is_binary name))
    (get-lodox-opts (binary_to_atom name 'latin1) rebar-opts))
   ([app rebar-opts] (when (is_atom app))

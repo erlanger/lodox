@@ -8,14 +8,15 @@
           (null? 1)))
 
 (defun macro-clauses?
-  "Return `true` iff `forms` is a list of elements satisfying [[macro-clause?/1]]."
+  "Return `true` iff `forms` is a list of
+  elements satisfying [[macro-clause?/1]]."
   ([forms] (when (is_list forms)) (lists:all #'macro-clause?/1 forms))
   ([_]                            'false))
 
 (defun macro-clause?
   "Given a term, return `true` iff it seems like a macro clause.
-A macro clause either satisfies [[clause?/1]] without alteration or when
-its head in encapsulated in a list."
+  A macro clause either satisfies [[clause?/1]] without alteration or when
+  its head in encapsulated in a list."
   ([(= `(,h . ,t) form)]
    (orelse (clause? form)
            (clause? `([,h] . ,t))))
@@ -38,7 +39,7 @@ its head in encapsulated in a list."
 
 (defun arglist?
   "Given a term, return `true` iff it is either the empty list, a list of
-elements satisfying [[arg?/1]] or a term that satisfies [[arg?/1]]."
+  elements satisfying [[arg?/1]] or a term that satisfies [[arg?/1]]."
   (['()]        'true)
   ([`(,h . ,t)] (andalso (arg? h) (if (is_list t) (arglist? t) (arg? t))))
   ([_]          'false))
@@ -55,8 +56,8 @@ elements satisfying [[arg?/1]] or a term that satisfies [[arg?/1]]."
                    #'string?/1)))
 
 (defun patterns?
-    "Given a term, return `true` iff it is either the empty list, a list of
-elements satisfying [[pattern?/1]] or a term that satisfies [[pattern?/1]]."
+  "Given a term, return `true` iff it is either the empty list, a list of
+  elements satisfying [[pattern?/1]] or a term that satisfies [[pattern?/1]]."
   (['()]        'true)
   ([`(,h . ,t)]
    (andalso (pattern? h) (if (is_list t) (patterns? t) (pattern? t))))

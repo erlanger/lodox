@@ -26,15 +26,15 @@
 (defun docs (app-name)
   "Given an app-name (binary), return a map like:
 
-```commonlisp
-'#m(name        #\"lodox\"
-    version     \"0.12.13\"
-    description \"The LFE rebar3 Lodox plugin\"
-    documents   ()
-    modules     {{list of maps of module metadata}}
-    documented  #m(modules    {{map from module name to list of f/a strings}}
-                   percentage {{percent documented (float)}}))
-```"
+  ```commonlisp
+  '#m(name        #\"lodox\"
+      version     \"0.12.13\"
+      description \"The LFE rebar3 Lodox plugin\"
+      documents   ()
+      modules     {{list of maps of module metadata}}
+      documented  #m(modules    {{map from module name to list of f/a strings}}
+                     percentage {{percent documented (float)}}))
+  ```"
   (let* ((app         (doto (binary_to_atom app-name 'latin1)
                             (application:load)))
          (app-info    (let ((`#(ok ,info) (application:get_all_key app)))
@@ -229,13 +229,13 @@
 
 (defun lib-docs (files)
   "Call [[lib-doc/1]] on each file in `files` and
-return the list of non-empty results."
+  return the list of non-empty results."
   (lists:filtermap #'lib-doc/1 files))
 
 (defun lib-doc (filename)
   "Parse `filename` and attempt to return a tuple, `` `#(true ,defsmap) ``
-where `defsmap` is a map representing the definitions in `filename`.
-If `file-doc/1` returns the empty list, return `false`."
+  where `defsmap` is a map representing the definitions in `filename`.
+  If `file-doc/1` returns the empty list, return `false`."
   (case (filename:extension filename)
     (".lfe" (case (file-doc filename)
               ('()     'false)
@@ -259,14 +259,14 @@ If `file-doc/1` returns the empty list, return `false`."
     '()))
 
 (defun documented (modules)
-  "Given a list of parsed modules, return a map representing undocumented
-functions therein.
+  "Given a list of parsed modules, return a map representing
+  undocumented functions therein.
 
-```commonlisp
-(map 'percentage   {{float 0.0-100.0}}
-     'undocumented (map {{module name (atom) }} [\"{{function/arity}}\" ...]
-                        ...))
-```"
+  ```commonlisp
+  (map 'percentage   {{float 0.0-100.0}}
+       'undocumented (map {{module name (atom) }} [\"{{function/arity}}\" ...]
+                          ...))
+  ```"
   (flet ((percentage
            ([`#(#(,n ,d) ,modules)]
             (->> `[,(* (/ n d) 100)]

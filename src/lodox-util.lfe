@@ -1,14 +1,14 @@
 (defmodule lodox-util
-  (doc "Utility functions to inspect the current version of lodox and its dependencies.")
+  (doc "Doc-searching functions.")
   (export (search-funcs 2) (search-funcs 3)))
 
 (defun search-funcs (modules partial-func)
   "Find the best-matching `def{un,macro}`.
 
-Given a list of modules and a partial `def{un,macro}` string, return the first
-matching definition. If none is found, return `` 'undefined ``.
+  Given a list of modules and a partial `def{un,macro}` string, return the first
+  matching definition. If none is found, return `` 'undefined ``.
 
-Equivalent to [[search-funcs/3]] with `` 'undefined `` as `starting-mod`."
+  Equivalent to [[search-funcs/3]] with `` 'undefined `` as `starting-mod`."
   (search-funcs modules partial-func 'undefined))
 
 (defun search-funcs (modules partial-func starting-mod)
