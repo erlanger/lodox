@@ -96,7 +96,7 @@ N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
         (-> (match-lambda
               ([`#(,start ,length)]
                (let* ((match (lists:sublist html (+ 1 start) length))
-                      (mfa   (lodox-util:search-funcs to-search match init)))
+                      (mfa   (lodox-search:funcs to-search match init)))
                  (iff (=/= mfa 'undefined)
                    (let ((`#(,mod [,_ . ,fname])
                           (lists:splitwith (lambda (c) (=/= c #\:)) mfa)))

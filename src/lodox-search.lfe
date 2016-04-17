@@ -1,18 +1,18 @@
-(defmodule lodox-util
+(defmodule lodox-search
   (doc "Doc-searching functions.")
-  (export (search-funcs 2) (search-funcs 3)))
+  (export (funcs 2) (funcs 3)))
 
-(defun search-funcs (modules partial-func)
+(defun funcs (modules partial-func)
   "Find the best-matching `def{un,macro}`.
 
   Given a list of modules and a partial `def{un,macro}` string, return the first
   matching definition. If none is found, return `` 'undefined ``.
 
-  Equivalent to [[search-funcs/3]] with `` 'undefined `` as `starting-mod`."
-  (search-funcs modules partial-func 'undefined))
+  Equivalent to [[funcs/3]] with `` 'undefined `` as `starting-mod`."
+  (funcs modules partial-func 'undefined))
 
-(defun search-funcs (modules partial-func starting-mod)
-  "Like [[search-funcs/2]], but give precedence to matches in `starting-mod`."
+(defun funcs (modules partial-func starting-mod)
+  "Like [[funcs/2]], but give precedence to matches in `starting-mod`."
   (let* ((suffix   (if (lists:member #\: partial-func)
                      partial-func
                      (cons #\: partial-func)))

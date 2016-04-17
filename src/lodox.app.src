@@ -2,7 +2,7 @@
   {description,  "The LFE rebar3 Lodox plugin"},
   {vsn,          "0.12.13"},
   {modules,      [lodox,
-                  'lodox-html-writer', 'lodox-p', 'lodox-parse', 'lodox-util',
+                  'lodox-html-writer', 'lodox-p', 'lodox-parse', 'lodox-search',
                   'unit-lodox-tests']},
   {registered,   []},
   {applications, [kernel, stdlib]},
