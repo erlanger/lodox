@@ -21,7 +21,7 @@
 
 (defun deps ()
   "The list of dependencies, providers, that need to run before this one."
-  '[#(default app_discovery)])
+  '[#(default compile)])
 
 (defun desc ()
   "The description for the task, used by `rebar3 help`."

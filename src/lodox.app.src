@@ -1,6 +1,6 @@
 {application,    'lodox', [
   {description,  "The LFE rebar3 Lodox plugin"},
-  {vsn,          "0.12.13"},
+  {vsn,          "0.13.0"},
   {modules,      [lodox,
                   'lodox-html-writer', 'lodox-p', 'lodox-parse', 'lodox-search',
                   'unit-lodox-tests']},
@@ -13,5 +13,6 @@
   {links, [
     {"GitHub",        "https://github.com/lfe-rebar3/lodox"},
     {"Documentation", "http://lfe-rebar3.github.io/lodox"}
-  ]}
+  ]},
+  {files, ["src", "include", "rebar.*", "README.md", "LICENSE", "resources"]}
 ]}.
