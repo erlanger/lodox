@@ -33,11 +33,7 @@ Requires Erlang 18.x or later.
 First, make sure you have the [[https://github.com/lfe-rebar3/compile][lfe-compile]] plugin as a dependency in your
 project's =rebar.config=:
 #+BEGIN_SRC erlang
-{plugins, [
-  {'lfe-compile',
-   {git, "git://github.com/lfe-rebar3/compile.git",
-    {tag, "0.3.0"}}}
-]}.
+{plugins, [rebar3_lfe_compile]}.
 #+END_SRC
 
 Then in your project's =rebar.config=, include the [[https://www.rebar3.org/v3.0/docs/configuration#section-provider-hooks][provider pre-hook]]:
