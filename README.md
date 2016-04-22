@@ -1,25 +1,40 @@
-[![img](https://travis-ci.org/lfe-rebar3/lodox.svg)](https://travis-ci.org/lfe-rebar3/lodox)
-[![img](https://img.shields.io/hexpm/v/lodox.svg)](https://hex.pm/packages/lodox)
-[![img](https://img.shields.io/badge/erlang-%E2%89%A518.0-red.svg)](http://www.erlang.org/downloads)
-[![img](https://img.shields.io/badge/docs-91%25-green.svg)](http://lfe-rebar3.github.io/lodox)
-[![img](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+# Lodox
 
-# Introduction
+[![Travis CI][travis badge]][travis builds]
+[![Release][tag badge]][latest release]
+[![Erlang][erlang badge]][erlang downloads]
+[![Documentation][doc badge]](docs)
+[![MIT License][license badge]](LICENSE)
 
-Like [Codox](https://github.com/weavejester/codox) for [LFE](https://github.com/rvirding/lfe). Check out the [self-generated documentation](http://lfe-rebar3.github.io/lodox/).
+[travis builds]: https://travis-ci.org/lfe-rebar3/lodox
+[travis badge]: https://travis-ci.org/lfe-rebar3/lodox.svg
+[tag badge]: https://img.shields.io/github/tag/lfe-rebar3/lodox.svg
+[latest release]: https://github.com/lfe-rebar3/lodox/releases/latest
+[erlang badge]: https://img.shields.io/badge/erlang-%E2%89%A518.0-red.svg
+[erlang downloads]: http://www.erlang.org/downloads
+[doc badge]: https://img.shields.io/badge/docs-91%25-green.svg
+[docs]: http://lfe-rebar3.github.io/lodox
+[license badge]: https://img.shields.io/badge/license-MIT-blue.svg
+
+
+_Like [Codox](https://github.com/weavejester/codox) for [LFE](https://github.com/rvirding/lfe)._
+Check out the [self-generated documentation](http://lfe-rebar3.github.io/lodox/).
 
 Requires Erlang 18.x or later.
 
 # Installation
 
-First, make sure you have the [lfe-compile](https://github.com/lfe-rebar3/compile) plugin as a dependency in your
+First, make sure you have the [lfe-compile][] plugin as a dependency in your
 project's `rebar.config`:
 
 ```erlang
-{plugins, [rebar3_lfe_compile]}.
+{plugins, [
+  %% ...
+  {'lfe-compile', {git, "git://github.com/lfe-rebar3/compile", {tag, "0.4.0"}}}
+]}.
 ```
 
-Then in your project's `rebar.config`, include the [provider pre-hook](https://www.rebar3.org/v3.0/docs/configuration#section-provider-hooks):
+Then in your project's `rebar.config`, include the [provider post-hook][]:
 
 ```erlang
 {provider_hooks, [{pre, [{compile, {lfe, compile}}]}]}
@@ -30,9 +45,13 @@ Finally, add Lodox to your `project_plugins` list.
 ```erlang
 {project_plugins, [
   %% ...
-  lodox
+  {lodox, {git, "git://github.com/lfe-rebar3/lodox.git", {tag, "0.12.15"}}}
 ]}.
 ```
+
+[lfe-compile]: https://github.com/lfe-rebar3/compile
+[provider post-hook]: https://www.rebar3.org/v3.0/docs/configuration#section-provider-hooks
+
 
 # Usage
 
@@ -51,30 +70,36 @@ rebar3 lfe lodox
 Alternatively, you can `do` both at once:
 
 ```sh
-rebar3 compile, lfe lodox
+rebar3 do compile, lfe lodox
 ```
 
 If all goes well, the output will look something like:
 
     Generated lodox vX.Y.Z docs in /path/to/lodox/doc
 
-And, as promised, [generated documentation](http://lfe-rebar3.github.io/lodox) will be in the `doc` subdirectory of
-your project.
+And, as promised, [generated documentation][docs] will be in the `doc` (or
+`{'output-path', "path/to/doc"}`) subdirectory of your project.
+
 
 ## Source Links
 
-*[ Modified from [Codox documentation](https://github.com/weavejester/codox#source-links). ]*
+_Modified from [Codox documentation][Codox source links]._
 
 If you have the source available at a URI and would like to have links to the
-function/macro's source file in the documentation, you can set the `​'source-uri'​`
-[configuration parameter](http://www.erlang.org/doc/design_principles/applications.html#id76014) in your [application resource file](http://www.erlang.org/doc/design_principles/applications.html#id75484).
+function/macro's source file in the documentation, you can set the
+`​'source-uri'​` in your `rebar.config` as follows:
 
 ```erlang
-{env, [
-  {'source-uri',
-   "https://github.com/foo/bar/blob/{version}/{filepath}#L{line}"}
-]}
+{lodox, [
+  {apps, [
+    {my_app, [
+      {'source-uri', "https://github.com/user/my_app/blob/{version}/{filepath}#L{line}"},
+      {'output-path', "doc"}
+    ]}
+  ]}
+]}.
 ```
+
 
 The URI is a template that may contain the following keys:
 
@@ -114,17 +139,21 @@ The URI is a template that may contain the following keys:
 </table>
 
 N.B. In order for `{version}` to work properly, you must add the corresponding
-tag. For example, if your `.app` file contains `{vsn, "1.2.3"}` you must add the
-tag, `​"1.2.3"​`, to your repo.
+tag. For example, if your [`.app`][application resource file] file contains
+`{vsn, "1.2.3"}` you must add the tag, `​"1.2.3"​`, to your repo.
+
+[Codox source links]: https://github.com/weavejester/codox#source-links
+[configuration parameter]: http://www.erlang.org/doc/design_principles/applications.html#id76014
+[application resource file]: http://www.erlang.org/doc/design_principles/applications.html#id75484
+
 
 ## Docstring Formats
 
-*[ Modified from [Codox documentation](https://github.com/weavejester/codox#docstring-formats). ]*
+_Modified from [Codox documentation][docstring formats]._
 
-By default, docstrings are rendered by Lodox as Markdown via [pandoc](http://pandoc.org). If `pandoc`
-is not available, Lodox will fall back to [erlmarkdown](https://github.com/erlware/erlmarkdown).
+By default, docstrings are rendered by Lodox as Markdown via [pandoc][].
 
-It is strongly recommended that you install [pandoc](http://pandoc.org), as it is much more robust.
+As such, installing [pandoc][] is a prerequisite for using Lodox..
 
 In a future version, you will be able to override this behaviour by specifying
 an explicit format for your docstrings.
@@ -135,13 +164,18 @@ then Lodox will try to find a best match out of all the definitions it's
 documenting.
 
 N.B. Module-less definitions in `.lfe` files in the `include` directory,
-e.g. [lodox-macros](include/lodox-macros.lfe), will also be included in the search.
+e.g. [lodox-macros][], will also be included in the search.
 
 ```lfe
 (defun bar (x)
   "See [[foo/2]] and [[baz:square/1]] for other examples."
   ...)
 ```
+
+[docstring formats]: https://github.com/weavejester/codox#docstring-formats
+[pandoc]: http://pandoc.org
+[lodox-macros]: include/lodox-macros.lfe
+
 
 # License
 
@@ -170,7 +204,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-Significant code and inspiration from [Codox](https://github.com/weavejester/codox). Copyright © 2015 James Revees
+Significant code and inspiration from [Codox][]. Copyright © 2015 James Revees
 
 Codox is distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
+
+[Codox]: https://github.com/weavejester/codox
