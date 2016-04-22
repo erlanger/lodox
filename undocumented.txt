@@ -1,4 +1,0 @@
-== lodox-parse ==
-script-doc/1
-macro-doc/1
-form-doc/1
