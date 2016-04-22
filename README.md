@@ -3,7 +3,7 @@
 [![Travis CI][travis badge]][travis builds]
 [![Release][tag badge]][latest release]
 [![Erlang][erlang badge]][erlang downloads]
-[![Documentation][doc badge]](docs)
+[![Documentation][doc badge]][docs]
 [![MIT License][license badge]](LICENSE)
 
 [travis builds]: https://travis-ci.org/lfe-rebar3/lodox
