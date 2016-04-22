@@ -45,7 +45,7 @@ Finally, add Lodox to your `project_plugins` list.
 ```erlang
 {project_plugins, [
   %% ...
-  {lodox, {git, "git://github.com/lfe-rebar3/lodox.git", {tag, "0.13.0"}}}
+  {lodox, {git, "git://github.com/lfe-rebar3/lodox.git", {tag, "0.13.1"}}}
 ]}.
 ```
 
