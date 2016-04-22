@@ -4,9 +4,7 @@
   (import (from levaindoc (markdown_github->html 1 ))))
 
 (include-lib "clj/include/compose.lfe")
-
 (include-lib "exemplar/include/html-macros.lfe")
-
 (include-lib "lodox/include/lodox-macros.lfe")
 
 (defun write-docs (project)
@@ -169,7 +167,7 @@ N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
 
 (defun primary-sidebar (project current)
   (div '[class "sidebar primary"]
-    `[,(index-link project (lodox-p:null? current))
+    `[,(index-link project (=:= () current))
       ,(includes-menu project current)
       ,(modules-menu project current)]))
 

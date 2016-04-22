@@ -12,7 +12,7 @@
 [latest release]: https://github.com/lfe-rebar3/lodox/releases/latest
 [erlang badge]: https://img.shields.io/badge/erlang-%E2%89%A518.0-red.svg
 [erlang downloads]: http://www.erlang.org/downloads
-[doc badge]: https://img.shields.io/badge/docs-91%25-green.svg
+[doc badge]: https://img.shields.io/badge/docs-100%25-green.svg
 [docs]: http://lfe-rebar3.github.io/lodox
 [license badge]: https://img.shields.io/badge/license-MIT-blue.svg
 
@@ -45,7 +45,7 @@ Finally, add Lodox to your `project_plugins` list.
 ```erlang
 {project_plugins, [
   %% ...
-  {lodox, {git, "git://github.com/lfe-rebar3/lodox.git", {tag, "0.12.15"}}}
+  {lodox, {git, "git://github.com/lfe-rebar3/lodox.git", {tag, "0.13.0"}}}
 ]}.
 ```
 

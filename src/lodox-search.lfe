@@ -23,8 +23,8 @@
                      (lambda (func-name)
                        (=/= (atom_to_list starting-mod) (module func-name)))
                      matches)))
-    (if (lodox-p:null? external)
-      (if (lodox-p:null? matches) 'undefined (car matches))
+    (if (=:= () external)
+      (if (=:= () matches) 'undefined (car matches))
       (car external))))
 
 
