@@ -1,7 +1,7 @@
 [{<<"clj">>,{github,"lfex/clj",{tag,"0.4.1"}},0},
  {<<"exemplar">>,{github,"lfex/exemplar",{tag,"0.4.1"}},0},
  {<<"kla">>,{github,"lfex/kla",{tag,"0.6.1"}},1},
- {<<"levaindoc">>,{github,"quasiquoting/levaindoc",{tag,"0.5.0"}},0},
+ {<<"levaindoc">>,{github,"quasiquoting/levaindoc",{tag,"0.5.1"}},0},
  {<<"lfe">>,
   {git,"https://github.com/rvirding/lfe",
        {ref,"37436cbba84659ebe9e34cda99b1c5937a762e7a"}},
