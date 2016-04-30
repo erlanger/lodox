@@ -7,19 +7,19 @@
 (include-lib "exemplar/include/html-macros.lfe")
 (include-lib "lodox/include/lodox-macros.lfe")
 
-(defun write-docs (project)
+(defun write-docs (app)
   "Take raw documentation info and turn it into formatted HTML.
-  Write to and return `output-path` in `opts`. Default: `\"./doc\"`"
-  (doto (proplists:get_value 'output-path project "doc")
+  Write to and return `output-path` in `app`. Default: `\"./doc\"`"
+  (doto (proplists:get_value 'output-path app "doc")
     (ensure-dirs '["css" "js"])
     (copy-resource "css/default.css")
     (copy-resource "css/hk-pyg.css")
     (copy-resource "js/jquery.min.js")
     (copy-resource "js/page_effects.js")
-    (write-index        project)
-    (write-modules      project)
-    (write-libs         project)
-    (write-undocumented project)))
+    (write-index        app)
+    (write-modules      app)
+    (write-libs         app)
+    (write-undocumented app)))
 
 (defun include-css (style)
   (link `[type "text/css" href ,style rel "stylesheet"]))
@@ -38,15 +38,15 @@
     (-> (http_uri:encode (h func))
         (re:replace "%" "." '[global #(return list)])
         (->> (++ "func-")))
-   (func-id (func-name func))))
+    (func-id (func-name func))))
 
-(defun format-docstring (project m) (format-docstring project 'undefined m))
+(defun format-docstring (app def) (format-docstring app 'undefined def))
 
-(defun format-docstring (project module func)
+(defun format-docstring (app module func)
   ;; TODO: make format configurable
-  (format-docstring project module func 'markdown))
+  (format-docstring app module func 'markdown))
 
-(defun format-docstring (project mod def format)
+(defun format-docstring (app mod def format)
   ;; TODO: ensure binary
   (case (proplists:get_value 'doc def #"")
     (#"" "")
@@ -57,11 +57,11 @@
        ('markdown (when (is_list mod))
         (let ((name (proplists:get_value 'name mod))
               (html (markdown->html (unicode:characters_to_list doc))))
-          (format-wikilinks project html name)))
+          (format-wikilinks app html name)))
        ('markdown
         (let ((name (proplists:get_value 'name def))
               (html (markdown->html (unicode:characters_to_list doc))))
-          (format-wikilinks project html name)))))))
+          (format-wikilinks app html name)))))))
 
 (defun markdown->html (markdown)
   "Given a Markdown string, convert it to HTML.
@@ -73,13 +73,13 @@
     ('false (exit "Pandoc is required."))
     (pandoc (let ((`#(ok ,html) (markdown_github->html markdown))) html))))
 
-(defun format-wikilinks (project html init)
+(defun format-wikilinks (app html init)
   (case (re:run html "\\[\\[([^\\[]+/\\d+)\\]\\]"
                 '[global #(capture all_but_first)])
     ('nomatch html)
     (`#(match ,matches)
-     (let ((to-search (++ (proplists:get_value 'modules project)
-                          (proplists:get_value 'libs    project))))
+     (let ((to-search (++ (proplists:get_value 'modules app)
+                          (proplists:get_value 'libs    app))))
        (-> (match-lambda
              ([`#(,start ,length)]
               (let* ((match (lists:sublist html (+ 1 start) length))
@@ -119,28 +119,28 @@
 (defun func-uri (module func)
   (++ (mod-filename module) "#" (func-id func)))
 
-(defun func-source-uri (source-uri project module func)
-  (let* ((offset    (+ 1 (length (proplists:get_value 'app-dir project))))
+(defun func-source-uri (source-uri app module func)
+  (let* ((offset    (+ 1 (length (proplists:get_value 'app-dir app))))
          (filepath* (proplists:get_value 'filepath module))
          (filepath  (binary:part filepath* offset (- (size filepath*) offset)))
          (line      (integer_to_binary (proplists:get_value 'line func)))
-         (version   (proplists:get_value 'version project)))
+         (version   (proplists:get_value 'version app)))
     (fold-replace source-uri
       `[#("{filepath}"  ,filepath)
         #("{line}"      ,line)
         #("{version}"   ,version)])))
 
-(defun index-link (project on-index?)
+(defun index-link (_app on-index?)
   `[,(h3 '[class "no-link"] (span '[class "inner"] "Application"))
     ,(ul '[class "index-link"]
          (li `[class ,(++ "depth-1" (if on-index? " current" ""))]
              (link-to "index.html" (div '[class "inner"] "Index"))))])
 
-(defun includes-menu (project current-lib)
-  (make-menu "Includes" (proplists:get_value 'libs project) current-lib))
+(defun includes-menu (app current-lib)
+  (make-menu "Includes" (proplists:get_value 'libs app) current-lib))
 
-(defun modules-menu (project current-mod)
-  (make-menu "Modules" (proplists:get_value 'modules project) current-mod))
+(defun modules-menu (app current-mod)
+  (make-menu "Modules" (proplists:get_value 'modules app) current-mod))
 
 (defun make-menu
   ([_heading [] _current] [])
@@ -153,13 +153,13 @@
      (list (h3 '[class "no-link"] (span '[class "inner"] heading))
            (ul (lists:map #'menu-item/1 (index-by 'name plists)))))))
 
-(defun primary-sidebar (project) (primary-sidebar project []))
+(defun primary-sidebar (app) (primary-sidebar app []))
 
-(defun primary-sidebar (project current)
+(defun primary-sidebar (app current)
   (div '[class "sidebar primary"]
-    `[,(index-link project (=:= () current))
-      ,(includes-menu project current)
-      ,(modules-menu project current)]))
+    `[,(index-link app (=:= () current))
+      ,(includes-menu app current)
+      ,(modules-menu app current)]))
 
 (defun sorted-exported-funcs (module)
   (-> (lambda (a b)
@@ -186,44 +186,44 @@
     ,(include-js "js/jquery.min.js")
     ,(include-js "js/page_effects.js")])
 
-(defun project-title (project)
+(defun project-title (app)
   (span '[class "project-title"]
     (list (span '[class "project-name"]
-            (h (proplists:get_value 'name project)))
+            (h (proplists:get_value 'name app)))
           " "
           (span '[class "project-version"]
-            (h (proplists:get_value 'version project))))))
+            (h (proplists:get_value 'version app))))))
 
-(defun header* (project)
+(defun header* (app)
   (div '[id "header"]
     `[,(h2 `["Generated by "
              ,(link-to "https://github.com/lfe-rebar3/lodox" "Lodox")])
       ,(h1 (link-to "index.html"
-             `[,(project-title project) " "
+             `[,(project-title app) " "
                ,(span '[class "project-documented"]
-                  (->> (proplists:get_value 'documented project)
+                  (->> (proplists:get_value 'documented app)
                        (proplists:get_value 'percentage)
                        (round)
                        (list)
                        (io_lib:format "(~w% documented)")))]))]))
 
-(defun index-page (project)
+(defun index-page (app)
   (html
     `[,(head
          `[,(default-includes)
-           ,(title (++ (h (proplists:get_value 'name project)) " "
-                       (h (proplists:get_value 'version project))))])
+           ,(title (++ (h (proplists:get_value 'name app)) " "
+                       (h (proplists:get_value 'version app))))])
       ,(body
-         `[,(header* project)
-           ,(primary-sidebar project)
+         `[,(header* app)
+           ,(primary-sidebar app)
            ,(div '[id "content" class "module-index"]
-              `[,(h1 (project-title project))
-                ,(case (proplists:get_value 'description project)
+              `[,(h1 (project-title app))
+                ,(case (proplists:get_value 'description app)
                    ("" "")
                    (doc (div '[class "doc"] (p (h doc)))))
                 ,(case (lists:sort
                          (lambda (a b) (=< (mod-name a) (mod-name b)))
-                         (proplists:get_value 'libs project))
+                         (proplists:get_value 'libs app))
                    ([] "")
                    (libs
                     `[,(h2 "Includes")
@@ -249,7 +249,7 @@
                      (div '[class "module"]
                        `[,(h3 (link-to (mod-filename module)
                                 (h (mod-name module))))
-                         ,(case (format-docstring project [] module)
+                         ,(case (format-docstring app [] module)
                             (""  "")
                             ;; TODO: summarize
                             (doc (div '[class "doc"] doc)))
@@ -265,27 +265,27 @@
                                   (sorted-exported-funcs module)))])]))
                    (lists:sort
                      (lambda (a b) (=< (mod-name a) (mod-name b)))
-                     (proplists:get_value 'modules project)))])])]))
+                     (proplists:get_value 'modules app)))])])]))
 
 ;; TODO: exemplar-ify this
 (defun unordered-list (lst) (ul (lists:map #'li/1 lst)))
 
 #|
 (defun format-document
-  ([project (= doc `#m(format ,format))] (when (=:= format 'markdown))
+  ([app (= doc `#m(format ,format))] (when (=:= format 'markdown))
    ;; TODO: render markdown
    `[div (class "markdown") ,(proplists:get_value 'content doc)]))
 
-(defun document-page (project doc)
+(defun document-page (app doc)
   (html
     (head
       `[,(default-includes)
         ,(title (h (proplists:get_value 'title doc)))])
     (body
-      `[,(header* project)
-        ,(primary-sidebar project doc)
+      `[,(header* app)
+        ,(primary-sidebar app doc)
         ,(div '[id "content" class "document"]
-           (div '[id "doc"] (format-document project doc)))])))
+           (div '[id "doc"] (format-document app doc)))])))
 |#
 
 (defun func-usage (func)
@@ -301,7 +301,7 @@
       (h4 '[class "behaviour"] (atom_to_list behaviour)))
     (proplists:get_value 'behaviour mod)))
 
-(defun func-docs (project module func)
+(defun func-docs (app module func)
   (div `[class "public anchor" id ,(h (func-id func))]
     `[,(h3 (h (func-name func)))
       ,(case (func-usage func)
@@ -314,45 +314,45 @@
                 (string:join "\n")
                 (markdown->html)))))
       ,(div '[class "doc"]
-         (format-docstring project module func))
+         (format-docstring app module func))
       ;; TODO: members?
-      ,(case (proplists:get_value 'source-uri project)
+      ,(case (proplists:get_value 'source-uri app)
          ('undefined [])                ; Log failure to generate link?
          (source-uri
           (div '[class "src-link"]
-            (link-to (func-source-uri source-uri project module func)
+            (link-to (func-source-uri source-uri app module func)
               "view source"))))]))
 
-(defun module-page (project module)
+(defun module-page (app module)
   (html
     `[,(head
          `[,(default-includes)
            ,(title (++ (h (mod-name module)) " documentation"))])
       ,(body
-         `[,(header* project)
-           ,(primary-sidebar project module)
+         `[,(header* app)
+           ,(primary-sidebar app module)
            ,(funcs-sidebar module)
            ,(div '[id "content" class "module-docs"]
               `[,(h1 '[id "top" class "anchor"] (h (mod-name module)))
                 ,(mod-behaviour module)
-                ,(div '[class "doc"] (format-docstring project [] module))
-                ,(lists:map (lambda (func) (func-docs project module func))
+                ,(div '[class "doc"] (format-docstring app [] module))
+                ,(lists:map (lambda (func) (func-docs app module func))
                    (sorted-exported-funcs module))])])]))
 
-(defun lib-page (project lib)
+(defun lib-page (app lib)
   (html
     `[,(head
          `[,(default-includes)
            ,(title (++ (h (proplists:get_value 'name lib))
                        " documentation"))])
       ,(body
-         `[,(header* project)
-           ,(primary-sidebar project lib)
+         `[,(header* app)
+           ,(primary-sidebar app lib)
            ,(funcs-sidebar lib)
            ,(div '[id "content" class "module-docs"] ; TODO: confirm this
               (list (h1 '[id "top" class "anchor"]
                         (h (proplists:get_value 'name lib)))
-                    (lists:map (lambda (func) (func-docs project lib func))
+                    (lists:map (lambda (func) (func-docs app lib func))
                       (sorted-exported-funcs lib))))])]))
 
 (defun copy-resource (output-dir resource)
@@ -380,24 +380,24 @@ If something goes wrong, throw a descriptive error."
   "Given a `path` and `dir`ectory name, call [[ensure-dir/1]] on `path`/`dir`."
   (ensure-dir (filename:join path dir)))
 
-(defun write-index (output-dir project)
+(defun write-index (output-dir app)
   (file:write_file (filename:join output-dir "index.html")
-                   (index-page project)))
+                   (index-page app)))
 
-(defun write-modules (output-dir project)
+(defun write-modules (output-dir app)
   (flet ((write-module (module)
            (-> (mod-filepath output-dir module)
-               (file:write_file (module-page project module)))))
-    (lists:foreach #'write-module/1 (proplists:get_value 'modules project))))
+               (file:write_file (module-page app module)))))
+    (lists:foreach #'write-module/1 (proplists:get_value 'modules app))))
 
-(defun write-libs (output-dir project)
+(defun write-libs (output-dir app)
   (flet ((write-lib (lib)
            (file:write_file (mod-filepath output-dir lib)
-                            (lib-page project lib))))
-    (lists:foreach #'write-lib/1 (proplists:get_value 'libs project))))
+                            (lib-page app lib))))
+    (lists:foreach #'write-lib/1 (proplists:get_value 'libs app))))
 
-(defun write-undocumented (output-dir project)
-  (let ((undocumented (clj-seq:get-in project '[documented undocumented]))
+(defun write-undocumented (output-dir app)
+  (let ((undocumented (clj-seq:get-in app '[documented undocumented]))
         (output-file  (filename:join output-dir "undocumented.txt"))
         (collect      (match-lambda
                         ([`#(,_mod []) acc] acc)
@@ -410,11 +410,11 @@ If something goes wrong, throw a descriptive error."
       (lines (->> (string:join lines "\n") (file:write_file output-file))))))
 
 #|
-(defun write-documents (output-dir project)
+(defun write-documents (output-dir app)
   (flet ((write-document (document)
            (-> (doc-filepath output-dir document)
-               (file:write_file (document-page project document)))))
-    (lists:foreach #'write-document/1 (proplists:get_value 'documents project))))
+               (file:write_file (document-page app document)))))
+    (lists:foreach #'write-document/1 (proplists:get_value 'documents app))))
 |#
 
 (defun func-name (func)
