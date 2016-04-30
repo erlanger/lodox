@@ -22,7 +22,7 @@
 
 ```commonlisp
 [#(name        #\"lodox\")
- #(version     \"0.14.0\")
+ #(version     \"0.14.1\")
  #(description \"The LFE rebar3 Lodox plugin\")
  #(documents   [])
  #(modules     {{list of proplists of module metadata}})
