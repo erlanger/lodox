@@ -31,13 +31,13 @@
          (version     (proplists:get_value 'vsn app-info ""))
          (documented  (documented modules))
          (description (proplists:get_value 'description app-info "")))
-    `[#(name         ,app-name)
-      #(version      ,version)
-      #(description  ,description)
+    `[#(name        ,app-name)
+      #(version     ,version)
+      #(description ,description)
       ;; TODO: parse includes as before
-      #(libs         [])
-      #(modules      ,modules)
-      #(documented ,documented)]))
+      #(libs        [])
+      #(modules     ,modules)
+      #(documented  ,documented)]))
 
 (defun documented (modules)
   "Given a list of parsed modules, return a proplist representing
@@ -106,8 +106,8 @@
     (#"Missing \"LDoc\" chunk." 'false)
     (`#(lfe_docs_v1 ,docs ,mod-doc)
      (-> (match-lambda
-           ([`#(doc function true ,name ,arity ,patterns ,doc ,line)]
-            `#(true [#(name ,name)
+           ([`#(doc function true #(,name ,arity) ,patterns ,doc ,line)]
+            `#(true [#(name     ,name)
                      #(arity    ,arity)
                      #(patterns ,patterns)
                      #(doc      ,doc)
