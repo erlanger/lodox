@@ -120,10 +120,11 @@
   (++ (mod-filename module) "#" (func-id func)))
 
 (defun func-source-uri (source-uri project module func)
-  (let* ((offset   (+ 1 (length (proplists:get_value 'app-dir project))))
-         (filepath (lists:nthtail offset (proplists:get_value 'filepath module)))
-         (line     (integer_to_list (proplists:get_value 'line func)))
-         (version  (proplists:get_value 'version project)))
+  (let* ((offset    (+ 1 (length (proplists:get_value 'app-dir project))))
+         (filepath* (proplists:get_value 'filepath module))
+         (filepath  (binary:part filepath* offset (- (size filepath*) offset)))
+         (line      (integer_to_binary (proplists:get_value 'line func)))
+         (version   (proplists:get_value 'version project)))
     (fold-replace source-uri
       `[#("{filepath}"  ,filepath)
         #("{line}"      ,line)
