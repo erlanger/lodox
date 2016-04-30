@@ -49,6 +49,8 @@
                    [\"{{function/arity}}\" ...]),...]))]
 ```"
   (flet ((percentage
+          ([`#(#(,_ 0) ,modules)]
+          `[#(percentage 0) #(undocumented ,modules)])
           ([`#(#(,n ,d) ,modules)]
            (->> `[,(* (/ n d) 100)]
                 (io_lib:format "~.2f")
