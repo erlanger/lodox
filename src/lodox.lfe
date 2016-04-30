@@ -4,10 +4,8 @@
   [1]: http://www.rebar3.org/docs/plugins
   [2]: https://github.com/tsloughter/providers")
   (behaviour provider)
-  ;; N.B. Export all since LFE doesn't like us defining do/1.
+  ;; N.B. Export all since LFE doesn't like us exporting do/1.
   (export all))
-
-(include-lib "clj/include/compose.lfe")
 
 (defun namespace ()
   "The namespace in which `lodox` is registered, `default`."
@@ -84,9 +82,8 @@
          (doc-dir    (filename:join app-dir "doc")))
     (rebar_api:debug "Adding ~p to the code path" `[,ebin-dir])
     (code:add_patha ebin-dir)
-    (let ((project (->> lodox-opts
-                        (maybe-default 'output-path doc-dir)
-                        (cons `#(app-dir ,app-dir)))))
+    (let ((project `[#(app-dir ,app-dir)
+                     . ,(maybe-default 'output-path doc-dir lodox-opts)]))
       (rebar_api:debug "Generating docs for ~p"
         `[,(proplists:get_value 'name project)])
       (lodox-html-writer:write-docs project)
