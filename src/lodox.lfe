@@ -1,11 +1,13 @@
 (defmodule lodox
   (doc "The Lodox [Rebar3][1] [provider][2].
 
-[1]: http://www.rebar3.org/docs/plugins
-[2]: https://github.com/tsloughter/providers")
+  [1]: http://www.rebar3.org/docs/plugins
+  [2]: https://github.com/tsloughter/providers")
   (behaviour provider)
   ;; N.B. Export all since LFE doesn't like us defining do/1.
   (export all))
+
+(include-lib "clj/include/compose.lfe")
 
 (defun namespace ()
   "The namespace in which `lodox` is registered, `default`."
@@ -53,7 +55,7 @@
 (defun do (state)
   "Generate documentation for each application in the project.
 
-  See: [[lodox-html-writer:write-docs/2]]"
+  See: [[lodox-html-writer:write-docs/1]]"
   (rebar_api:debug "Starting do/1 for lodox" [])
   (let ((apps (rebar_state:project_apps state)))
     (lists:foreach #'write-docs/1 apps))
@@ -61,8 +63,8 @@
 
 (defun format_error (reason)
   "When an exception is raised or a value returned as
-`#(error #((MODULE) reason)`, `(format_error reason)` will be called
-so a string can be formatted explaining the issue."
+  `#(error #((MODULE) reason)`, `(format_error reason)` will be called
+  so a string can be formatted explaining the issue."
   (io_lib:format "~p" `[,reason]))
 
 
@@ -71,7 +73,7 @@ so a string can be formatted explaining the issue."
 ;;;===================================================================
 
 (defun write-docs (app-info)
-  "Given an [app_info_t], call [[lodox-html-writer:write-docs/2]] appropriately.
+  "Given an [app_info_t], call [[lodox-html-writer:write-docs/1]] appropriately.
 
   [app_info_t]: https://github.com/rebar/rebar3/blob/master/src/rebar_app_info.erl"
   (let* ((`[,opts ,app-dir ,name ,vsn ,out-dir]
@@ -82,22 +84,14 @@ so a string can be formatted explaining the issue."
          (doc-dir    (filename:join app-dir "doc")))
     (rebar_api:debug "Adding ~p to the code path" `[,ebin-dir])
     (code:add_patha ebin-dir)
-    (let ((project (lists:foldl
-                     (lambda (m acc) (maps:merge acc m))
-                     (lodox-parse:docs name)
-                     `[#m(output-path ,doc-dir app-dir ,app-dir) ,lodox-opts])))
-      (rebar_api:debug "Generating docs for ~p" `[,(mref project 'name)])
+    (let ((project (->> lodox-opts
+                        (maybe-default 'output-path doc-dir)
+                        (cons `#(app-dir ,app-dir)))))
+      (rebar_api:debug "Generating docs for ~p"
+        `[,(proplists:get_value 'name project)])
       (lodox-html-writer:write-docs project)
-      (generated name vsn (mref project 'output-path)))))
-
-(defun generated
-  "Print a string of the form:
-
-  > Generated {{app-name}} v{{version}} docs in {{output directory}}"
-  ([name `#(cmd ,cmd) doc-dir]
-   (generated name (os:cmd (++ cmd " | tr -d \"\\n\"")) doc-dir))
-  ([name vsn doc-dir]
-   (rebar_api:console "Generated ~s v~s docs in ~s" `[,name ,vsn ,doc-dir])))
+      (rebar_api:console "Generated ~s v~s docs in ~s"
+        `[,name ,vsn ,(proplists:get_value 'output-path project)]))))
 
 (defun get-lodox-opts
   "Parse rebar.config for Lodox options.
@@ -109,4 +103,8 @@ so a string can be formatted explaining the issue."
                           (dict:fetch 'lodox rebar-opts)
                           []))
           (lodox-apps   (proplists:get_value 'apps lodox-config [])))
-     (maps:from_list (proplists:get_value app lodox-apps [])))))
+     (proplists:get_value app lodox-apps []))))
+
+(defun maybe-default (key value opts)
+  "Prepend `` `#(,key ,value) `` to `opts` iff `key` is not already defined."
+  (if (proplists:is_defined key opts) opts (cons `#(,key ,value) opts)))

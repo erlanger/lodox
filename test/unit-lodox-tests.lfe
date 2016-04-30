@@ -11,46 +11,48 @@
 
 ;; EUnit gets very upset if the following _ is a -.
 (defun validate_project (dir project)
-  `[#(#"project is a map"
-      ,(_assert (is_map project)))
+  `[#(#"project is a proplist"
+      ,(is* (clj-p:proplist? project)))
     #(#"description is a string"
-      ,(_assert (string? (mref* project 'description))))
+      ,(is* (string? (get* project 'description))))
     #(#"libs is a list"
-      ,(_assert (is_list (mref* project 'libs))))
+      ,(is* (is_list (get* project 'libs))))
     #(#"modules is a list"
-      ,(_assert (is_list (mref* project 'modules))))
+      ,(is* (is_list (get* project 'modules))))
     #(#"name matches directory"
-      ,(_assertEqual (project-name dir) (mref* project 'name)))
+      ,(is-equal* (project-name dir) (get* project 'name)))
     #(#"version is a list"
-      ,(_assert (is_list (mref* project 'version))))])
+      ,(is* (is_list (get* project 'version))))])
 
 (deftestgen modules-shapes
   (lists:map #'validate_module/1 (project-wide 'modules)))
 
 (defun validate_module (module)
-  `[#(#"module is a map"
-      ,(_assert (is_map module)))
+  `[#(#"module is a proplist"
+      ,(is* (clj-p:proplist? module)))
     #(#"module has correct keys"
-      ,(_assertEqual '(behaviour doc exports filepath name) (maps:keys module)))
+      ,(is-equal* '(behaviour doc exports filepath name)
+                  (lists:sort (proplists:get_keys module))))
     #(#"behaviour is a list of atoms"
-      ,(_assert (lists:all #'is_atom/1 (mref* module 'behaviour))))
+      ,(is* (lists:all #'is_atom/1 (get* module 'behaviour))))
     #(#"doc is a binary"
-      ,(_assert (is_binary (mref* module 'doc))))
+      ,(is* (is_binary (get* module 'doc))))
     #(#"exports is a list"
-      ,(_assert (is_list (mref* module 'exports))))
+      ,(is* (is_list (get* module 'exports))))
     #(#"filepath refers to a regular file"
-      ,(_assert (filelib:is_regular (mref* module 'filepath))))
+      ,(is* (filelib:is_regular (get* module 'filepath))))
     #(#"name is an atom"
-      ,(_assert (is_atom (mref* module 'name))))])
+      ,(is* (is_atom (get* module 'name))))])
 
 (deftestgen exports-shapes
   (lists:map #'validate_exports/1 (project-wide 'exports 'modules)))
 
 (defun validate_exports (exports)
-  `[#(#"exports is a map"
-      ,(_assert (is_map exports)))
+  `[#(#"exports is a proplist"
+      ,(is* (clj-p:proplist? exports)))
     #(#"exports has correct keys"
-      ,(_assertEqual '(arity doc line name patterns) (maps:keys exports)))
+      ,(is-equal* '(arity doc line name patterns)
+                  (lists:sort (proplists:get_keys exports))))
     #(#"patterns is a list of patterns (which may end with a guard)"
       ,(let ((patterns (lists:map
                          (lambda (pattern)
@@ -60,16 +62,16 @@
                                  ([`(when . ,_t)] 'false)
                                  ([_]             'true))
                                pattern)))
-                         (mref* exports 'patterns))))
-         (_assert (lists:all #'patterns?/1 patterns))))
+                         (get* exports 'patterns))))
+         (is* (lists:all #'patterns?/1 patterns))))
     #(#"artity is an integer"
-      ,(_assert (is_integer (mref* exports 'arity))))
+      ,(is* (is_integer (get* exports 'arity))))
     #(#"doc is a binary"
-      ,(_assert (is_binary (mref* exports 'doc))))
+      ,(is* (is_binary (get* exports 'doc))))
     #(#"line is an integer"
-      ,(_assert (is_integer (mref* exports 'line))))
+      ,(is* (is_integer (get* exports 'line))))
     #(#"name is an atom"
-      ,(_assert (is_atom (mref* exports 'name))))])
+      ,(is* (is_atom (get* exports 'name))))])
 
 
 ;;;===================================================================
@@ -78,7 +80,7 @@
 
 (defun all-docs () (lists:map #'lodox-parse:docs/1 '(#"lodox")))
 
-(defun mref* (m k) (maps:get k m 'error))
+(defun get* (plist k) (proplists:get_value k plist 'error))
 
 (defun project-name
   (["src"] #"lodox")
@@ -86,11 +88,11 @@
 
 (defun project-wide
   ([f]   (when (is_function f)) (lists:flatmap f (all-docs)))
-  ([key]                        (project-wide (lambda (proj) (mref* proj key)))))
+  ([key]                        (project-wide (lambda (proj) (get* proj key)))))
 
 (defun project-wide (key2 key1)
   (project-wide
-   (lambda (proj) (lists:flatmap (lambda (m) (mref* m key2)) (mref* proj key1)))))
+   (lambda (proj) (lists:flatmap (lambda (m) (get* m key2)) (get* proj key1)))))
 
 (defun src-dirs () '("src"))
 
@@ -122,6 +124,7 @@
           #'is_binary/1
           #'is_bitstring/1
           #'is_number/1
-          #'is_map/1
+          ;; FIXME: for older OTP releases
+          ;; #'is_map/1
           #'is_tuple/1
           #'string?/1)))

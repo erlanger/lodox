@@ -5,9 +5,10 @@
 
 (io:format " ~~~~>    Generating documentation for lodox ...\n")
 
-(->> #m(source-uri
-        "https://github.com/lfe-rebar3/lodox/blob/{version}/{filepath}#L{line}")
-     (maps:merge (lodox-parse:docs #"lodox"))
+(->> (lodox-parse:docs #"lodox")
+     (list* `#(app-dir    ,(let ((`#(ok ,cwd) (file:get_cwd))) cwd))
+            `#(source-uri ,(++ "https://github.com/lfe-rebar3/lodox"
+                               "/blob/{version}/{filepath}#L{line}")))
      (lodox-html-writer:write-docs)
      (list)
      (io:format "\nGenerated documentation in ./~s\n"))
