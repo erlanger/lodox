@@ -10,7 +10,7 @@
 [travis badge]: https://travis-ci.org/lfe-rebar3/lodox.svg
 [tag badge]: https://img.shields.io/github/tag/lfe-rebar3/lodox.svg
 [latest release]: https://github.com/lfe-rebar3/lodox/releases/latest
-[erlang badge]: https://img.shields.io/badge/erlang-%E2%89%A518.0-red.svg
+[erlang badge]: https://img.shields.io/badge/erlang-R16B03%20%7C%20%E2%89%A517.5-red.svg
 [erlang downloads]: http://www.erlang.org/downloads
 [doc badge]: https://img.shields.io/badge/docs-100%25-green.svg
 [docs]: http://lfe-rebar3.github.io/lodox
@@ -45,7 +45,7 @@ Finally, add Lodox to your `project_plugins` list.
 ```erlang
 {project_plugins, [
   %% ...
-  {lodox, {git, "git://github.com/lfe-rebar3/lodox.git", {tag, "0.13.1"}}}
+  {lodox, {git, "git://github.com/lfe-rebar3/lodox.git", {tag, "0.14.0"}}}
 ]}.
 ```
 
