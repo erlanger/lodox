@@ -1,6 +1,6 @@
 (defmodule lodox-parse
   (doc "Parsing LFE source files for metadata.")
-  (export (docs 1) (documented 1))
+  (export (docs 1) (docs 2) (documented 1))
   (import (rename erlang ((list_to_float 1) list->float))))
 
 (include-lib "clj/include/compose.lfe")
@@ -11,8 +11,13 @@
 ;;; API
 ;;;===================================================================
 
-;; TODO: write a better docstring
 (defun docs (app-name)
+  "Equivalent to [[docs/2]] with the empty list as `excluded-modules`."
+  (docs app-name []))
+
+;; TODO: write a better docstring
+;; TODO: document excluded-modules
+(defun docs (app-name excluded-modules)
   "Given an app-name (binary), return a proplist like:
 
 ```commonlisp
@@ -27,7 +32,9 @@
                         (application:load)))
          (app-info    (let ((`#(ok ,info) (application:get_all_key app)))
                         info))
-         (modules     (mod-docs (proplists:get_value 'modules app-info)))
+         (modules     (-> (proplists:get_value 'modules app-info)
+                          (->> (filter-excluded excluded-modules))
+                          (mod-docs)))
          (version     (proplists:get_value 'vsn app-info ""))
          (documented  (documented modules))
          (description (proplists:get_value 'description app-info "")))
@@ -137,3 +144,7 @@
   (case (beam_lib:chunks (code:which mod) '["LDoc"] '[allow_missing_chunks])
     (`#(ok #(,_ [#("LDoc" missing_chunk)])) #"Missing \"LDoc\" chunk.")
     (`#(ok #(,_ [#("LDoc" ,chunk)]))        (binary_to_term chunk))))
+
+(defun filter-excluded (excluded-modules modules)
+  (-> (lambda (module) (not (lists:member module excluded-modules)))
+      (lists:filter modules)))

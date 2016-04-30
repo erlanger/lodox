@@ -77,12 +77,13 @@
   (let* ((`[,opts ,app-dir ,name ,vsn ,out-dir]
           (lists:map (lambda (f) (call 'rebar_app_info f app-info))
             '[opts dir name original_vsn out_dir]))
-         (lodox-opts (get-lodox-opts name opts))
-         (ebin-dir   (filename:join out-dir "ebin"))
-         (doc-dir    (filename:join app-dir "doc")))
+         (lodox-opts       (get-lodox-opts name opts))
+         (excluded-modules (proplists:get_value 'exluded-modules lodox-opts []))
+         (ebin-dir         (filename:join out-dir "ebin"))
+         (doc-dir          (filename:join app-dir "doc")))
     (rebar_api:debug "Adding ~p to the code path" `[,ebin-dir])
     (code:add_patha ebin-dir)
-    (let ((project (++ (lodox-parse:docs name)
+    (let ((project (++ (lodox-parse:docs name excluded-modules)
                        (cons #(app-dir ,app-dir)
                              (maybe-default 'output-path doc-dir lodox-opts)))))
       (rebar_api:debug "Generating docs for ~p"
