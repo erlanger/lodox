@@ -408,15 +408,16 @@ If something goes wrong, throw a descriptive error."
 
 (defun write-undocumented (output-dir project)
   (let ((undocumented (clj-seq:get-in project '[documented undocumented]))
-        (output-file  (filename:join output-dir "undocumented.txt")))
-    (-> (match-lambda
-          ([`#(,mod ,exports) acc]
-           (-> (string:join exports "\n")
-               (->> (list mod)  (io_lib:format "== ~s ==~n~s~n" ))
-               (cons acc))))
-        (lists:foldl "" undocumented)
-        (string:join "\n")
-        (->> (file:write_file output-file)))))
+        (output-file  (filename:join output-dir "undocumented.txt"))
+        (collect      (match-lambda
+                        ([`#(,_mod []) acc] acc)
+                        ([`#(,mod ,exports) acc]
+                         (-> (string:join exports "\n")
+                             (->> (list mod) (io_lib:format "== ~s ==~n~s~n"))
+                             (cons acc))))))
+    (case (lists:foldl collect "" undocumented)
+      (""    (if (filelib:is_file output-file) (file:delete output-file) 'ok))
+      (lines (->> (string:join lines "\n") (file:write_file output-file))))))
 
 #|
 (defun write-documents (output-dir project)
