@@ -23,14 +23,14 @@
  #(modules     {{list of proplists of module metadata}})
  #(documented  {{ see documented/1 }})]
 ```"
-  (let* ((app           (doto (binary_to_atom app-name 'latin1)
-                          (application:load)))
-         (app-info      (let ((`#(ok ,info) (application:get_all_key app)))
-                          info))
-         (modules       (mod-docs (proplists:get_value 'modules app-info)))
-         (version       (proplists:get_value 'vsn app-info ""))
+  (let* ((app         (doto (binary_to_atom app-name 'latin1)
+                        (application:load)))
+         (app-info    (let ((`#(ok ,info) (application:get_all_key app)))
+                        info))
+         (modules     (mod-docs (proplists:get_value 'modules app-info)))
+         (version     (proplists:get_value 'vsn app-info ""))
          (documented  (documented modules))
-         (description   (proplists:get_value 'description app-info "")))
+         (description (proplists:get_value 'description app-info "")))
     `[#(name         ,app-name)
       #(version      ,version)
       #(description  ,description)
@@ -41,7 +41,7 @@
 
 (defun documented (modules)
   "Given a list of parsed modules, return a proplist representing
-  documented functions therein.
+  undocumented functions therein.
 
 ```commonlisp
 [#(percentage   {{float 0.0-100.0}}
