@@ -4,7 +4,7 @@
  {<<"levaindoc">>,{github,"quasiquoting/levaindoc",{tag,"0.5.1"}},0},
  {<<"lfe">>,
   {git,"https://github.com/rvirding/lfe",
-       {ref,"37436cbba84659ebe9e34cda99b1c5937a762e7a"}},
+       {ref,"25cea495dcd7e775d99a559c7e9e8fbe43433a2e"}},
   0},
  {<<"lfe-version">>,{github,"lfe-rebar3/version",{tag,"0.3.2"}},2},
  {<<"lutil">>,{github,"lfex/lutil",{tag,"0.8.1"}},1}].
