@@ -5,11 +5,12 @@ install: true
 before_script:
   - wget https://s3.amazonaws.com/rebar3/rebar3
   - chmod +x rebar3
-env: DEBUG=1 PATH=$PATH:.
+env: PATH=$PATH:.
 script: rebar3 eunit
 otp_release:
   - 18.3
-  # - 18.0
-  # - 17.5
-  - 17.1
-  # - R16B03-1
+  - 18.0
+  - 17.5
+  # http://erlang.org/pipermail/erlang-bugs/2014-June/004465.html
+  # - 17.1
+  - R16B03-1
