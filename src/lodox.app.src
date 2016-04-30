@@ -1,10 +1,10 @@
 {application,    lodox, [
   {description,  "The LFE rebar3 Lodox plugin."},
-  {vsn,          "0.14.1"},
+  {vsn,          "0.15.0"},
   {modules,      [lodox,
-                  'lodox-html-writer', 'lodox-parse', 'lodox-search',
-                  'unit-lodox-tests']},
-  {applications, [kernel, stdlib, lfe, clj, exemplar, levaindoc]},
+                  'lodox-html-writer', 'lodox-json-writer',
+                  'lodox-parse', 'lodox-search', 'unit-lodox-tests']},
+  {applications, [kernel, stdlib, lfe, clj, exemplar, levaindoc, jsx]},
 
   {maintainers,  ["Eric Bailey"]},
   {licenses,     ["MIT"]},

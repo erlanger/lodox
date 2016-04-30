@@ -1,0 +1,5 @@
+#!/usr/bin/env lfe
+;; -*- lfe -*-
+(io:format "\e[32m===> Generating JSON documentation for lodox...\e[0m\n")
+(lodox-json-writer:write-docs (lodox-parse:docs #"lodox"))
+(io:format " ~~~~>    Generated ./doc/lodox.json\n")
