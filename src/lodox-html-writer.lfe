@@ -402,7 +402,9 @@ If something goes wrong, throw a descriptive error."
         (collect      (match-lambda
                         ([`#(,_mod []) acc] acc)
                         ([`#(,mod ,exports) acc]
-                         (-> (string:join exports "\n")
+                         (-> (cons (car exports)
+                                   (lc ((<- export (cdr exports)))
+                                     (list #"\n" export)))
                              (->> (list mod) (io_lib:format "== ~s ==~n~s~n"))
                              (cons acc))))))
     (case (lists:foldl collect "" undocumented)
