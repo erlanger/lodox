@@ -4,4 +4,8 @@ all: compile
 
 compile: ; @rebar3 compile
 
-doc: compile; @./make-doc
+doc: html json
+
+html: compile; @./make-html
+
+json: compile; @./make-json

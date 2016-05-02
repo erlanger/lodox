@@ -83,14 +83,14 @@
          (doc-dir          (filename:join app-dir "doc")))
     (rebar_api:debug "Adding ~p to the code path" `[,ebin-dir])
     (code:add_patha ebin-dir)
-    (let ((project (++ (lodox-parse:docs name excluded-modules)
+    (let ((app (++ (lodox-parse:docs name excluded-modules)
                        (cons #(app-dir ,app-dir)
                              (maybe-default 'output-path doc-dir lodox-opts)))))
       (rebar_api:debug "Generating docs for ~p"
-        `[,(proplists:get_value 'name project)])
-      (lodox-html-writer:write-docs project)
+        `[,(proplists:get_value 'name app)])
+      (lodox-html-writer:write-docs app)
       (rebar_api:console "Generated ~s v~s docs in ~s"
-        `[,name ,vsn ,(proplists:get_value 'output-path project)]))))
+        `[,name ,vsn ,(proplists:get_value 'output-path app)]))))
 
 (defun get-lodox-opts
   "Parse rebar.config for Lodox options.

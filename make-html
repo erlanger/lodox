@@ -3,7 +3,7 @@
 
 (include-file "_build/default/lib/clj/include/compose.lfe")
 
-(io:format " ~~~~>    Generating documentation for lodox ...\n")
+(io:format "\e[32m===> Generating HTML documentation for lodox...\e[0m\n")
 
 (->> (lodox-parse:docs #"lodox" '[lodox-search])
      (list* `#(app-dir    ,(let ((`#(ok ,cwd) (file:get_cwd))) cwd))
@@ -11,4 +11,4 @@
                                "/blob/{version}/{filepath}#L{line}")))
      (lodox-html-writer:write-docs)
      (list)
-     (io:format "\nGenerated documentation in ./~s\n"))
+     (io:format " ~~~~>    Generated docs in ./~s\n"))

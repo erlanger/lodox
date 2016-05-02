@@ -13,16 +13,16 @@
 (defun validate_project (dir project)
   `[#(#"project is a proplist"
       ,(is* (clj-p:proplist? project)))
-    #(#"description is a string"
-      ,(is* (string? (get* project 'description))))
+    #(#"description is a binary"
+      ,(is* (is_binary (get* project 'description))))
     #(#"libs is a list"
       ,(is* (is_list (get* project 'libs))))
     #(#"modules is a list"
       ,(is* (is_list (get* project 'modules))))
     #(#"name matches directory"
       ,(is-equal* (project-name dir) (get* project 'name)))
-    #(#"version is a list"
-      ,(is* (is_list (get* project 'version))))])
+    #(#"version is a binary"
+      ,(is* (is_binary (get* project 'version))))])
 
 (deftestgen modules-shapes
   (lists:map #'validate_module/1 (project-wide 'modules)))

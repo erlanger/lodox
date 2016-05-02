@@ -22,7 +22,7 @@
 
 ```commonlisp
 [#(name        #\"lodox\")
- #(version     \"0.14.1\")
+ #(version     \"0.15.0\")
  #(description \"The LFE rebar3 Lodox plugin\")
  #(documents   [])
  #(modules     {{list of proplists of module metadata}})
@@ -39,8 +39,8 @@
          (documented  (documented modules))
          (description (proplists:get_value 'description app-info "")))
     `[#(name        ,app-name)
-      #(version     ,version)
-      #(description ,description)
+      #(version     ,(list_to_binary version))
+      #(description ,(list_to_binary description))
       ;; TODO: parse includes as before
       #(libs        [])
       #(modules     ,modules)
@@ -103,7 +103,7 @@
                    #(behaviour ,(mod-behaviour mod))
                    #(doc       ,mod-doc)
                    #(exports   ,exports)
-                   #(filepath  ,file)]))
+                   #(filepath  ,(list_to_binary file))]))
          ('false 'false)))))
   ([mods] (when (is_list mods))
    (lists:filtermap #'mod-docs/1 mods)))
@@ -135,7 +135,7 @@
   "Given a parsed def{un,macro} form (map), return a string, `\"name/arity\"`."
   (->> (lc ((<- k '[name arity])) (proplists:get_value k def))
        (io_lib:format "~s/~w")
-       (lists:flatten)))
+       (iolist_to_binary)))
 
 (defun ldoc-chunk (mod)
   "Return a given `beam` module's `\"LDoc\"` chunk as a term.
