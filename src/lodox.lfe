@@ -86,8 +86,8 @@
     (let ((app (++ (lodox-parse:docs name excluded-modules)
                    (cons `#(app-dir ,app-dir)
                          (maybe-default 'output-path doc-dir lodox-opts)))))
-      (rebar_api:debug "Generating docs for ~p"
-        `[,(proplists:get_value 'name app)])
+      (rebar_api:debug "Generating docs for ~p with excluded modules: ~p"
+        `[,(proplists:get_value 'name app) ,excluded-modules])
       (lodox-html-writer:write-docs app)
       (rebar_api:console "Generated ~s v~s docs in ~s"
         `[,name ,vsn ,(proplists:get_value 'output-path app)]))))
