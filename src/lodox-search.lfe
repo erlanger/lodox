@@ -1,5 +1,5 @@
 (defmodule lodox-search
-  (doc "Doc-searching functions.")
+  "Doc-searching functions."
   (export (funcs 2) (funcs 3))
   (import (rename erlang
             ((atom_to_list 1)    atom->string)

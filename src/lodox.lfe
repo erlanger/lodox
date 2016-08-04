@@ -1,14 +1,14 @@
 (defmodule lodox
-  (doc "The Lodox [Rebar3][1] [provider][2].
+  "The Lodox [Rebar3][1] [provider][2].
 
   [1]: http://www.rebar3.org/docs/plugins
-  [2]: https://github.com/tsloughter/providers")
+  [2]: https://github.com/tsloughter/providers"
   (behaviour provider)
   ;; N.B. Export all since LFE doesn't like us exporting do/1.
   (export all))
 
 (defun namespace ()
-  "The namespace in which `lodox` is registered, `default`."
+  "The namespace in which `lodox` is registered, `lfe`."
   'lfe)
 
 (defun provider-name ()

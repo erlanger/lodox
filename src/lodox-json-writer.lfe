@@ -1,5 +1,5 @@
 (defmodule lodox-json-writer
-  (doc "Documentation writer that outputs JSON.")
+  "Documentation writer that outputs JSON."
   (export (write-docs 1)))
 
 (include-lib "clj/include/compose.lfe")

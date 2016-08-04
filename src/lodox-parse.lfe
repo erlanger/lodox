@@ -1,6 +1,6 @@
 (defmodule lodox-parse
-  (doc "Parsing LFE source files for metadata.")
-  (export (docs 1) (docs 2) (documented 1))
+  "Parsing LFE source files for metadata."
+  (export (docs 1) (docs 2) (documented 1) (mod-doc 1))
   (import (rename erlang ((list_to_float 1) list->float))))
 
 (include-lib "clj/include/compose.lfe")

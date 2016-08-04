@@ -1,5 +1,5 @@
 (defmodule lodox-html-writer
-  (doc "Documentation writer that outputs HTML.")
+  "Documentation writer that outputs HTML."
   (export (write-docs 1))
   (import (from levaindoc (markdown_github->html 1 ))))
 
