@@ -3,7 +3,7 @@
   {vsn,          "0.15.0"},
   {modules,      [lodox,
                   'lodox-html-writer', 'lodox-json-writer',
-                  'lodox-parse', 'lodox-search', 'unit-lodox-tests']},
+                  'lodox-parse', 'lodox-search', lodox, 'unit-lodox-tests']},
   {applications, [kernel, stdlib, lfe, clj, exemplar, levaindoc, jsx]},
 
   {maintainers,  ["Eric Bailey"]},
