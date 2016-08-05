@@ -8,14 +8,14 @@
           ],
           "name": "write-docs",
           "arity": 1,
-          "doc": "Take raw documentation info and turn it into formatted HTML.\n  Write to and return `output-path` in `app`. Default: `\"./doc\"`",
+          "doc": "Take raw documentation info and turn it into formatted HTML.\nWrite to and return `output-path` in `app`. Default: `\"./doc\"`\n",
           "line": 10
         }
       ],
       "behaviour": [],
       "name": "lodox-html-writer",
-      "doc": "Documentation writer that outputs HTML.",
-      "filepath": "/Users/mohacker/src/lfe-rebar3/lodox/src/lodox-html-writer.lfe"
+      "doc": "Documentation writer that outputs HTML.\n",
+      "filepath": "/Users/mohacker/src/FrontendMasters/dojo/_checkouts/lodox/src/lodox-html-writer.lfe"
     },
     {
       "exports": [
@@ -25,14 +25,14 @@
           ],
           "name": "write-docs",
           "arity": 1,
-          "doc": "Take raw documentation info and turn it into JSON.\n  Write to and return `output-path` in `app`. Default: `\"./doc\"`",
+          "doc": "Take raw documentation info and turn it into JSON.\nWrite to and return `output-path` in `app`. Default: `\"./doc\"`\n",
           "line": 7
         }
       ],
       "behaviour": [],
       "name": "lodox-json-writer",
-      "doc": "Documentation writer that outputs JSON.",
-      "filepath": "/Users/mohacker/src/lfe-rebar3/lodox/src/lodox-json-writer.lfe"
+      "doc": "Documentation writer that outputs JSON.\n",
+      "filepath": "/Users/mohacker/src/FrontendMasters/dojo/_checkouts/lodox/src/lodox-json-writer.lfe"
     },
     {
       "exports": [
@@ -42,7 +42,7 @@
           ],
           "name": "docs",
           "arity": 1,
-          "doc": "Equivalent to [[docs/2]] with the empty list as `excluded-modules`.",
+          "doc": "Equivalent to [[docs/2]] with the empty list as `excluded-modules`.\n",
           "line": 14
         },
         {
@@ -51,7 +51,7 @@
           ],
           "name": "docs",
           "arity": 2,
-          "doc": "Given an app-name (binary), return a proplist like:\n\n```commonlisp\n[#(name        #\"lodox\")\n #(version     \"0.15.0\")\n #(description \"The LFE rebar3 Lodox plugin\")\n #(documents   [])\n #(modules     {{list of proplists of module metadata}})\n #(documented  {{ see documented/1 }})]\n```",
+          "doc": "Given an app-name (binary), return a proplist like:\n\n```commonlisp\n[#(name        #\"lodox\")\n #(version     \"0.15.0\")\n #(description \"The LFE rebar3 Lodox plugin\")\n #(documents   [])\n #(modules     {{list of proplists of module metadata}})\n #(documented  {{ see documented/1 }})]\n```\n",
           "line": 20
         },
         {
@@ -60,14 +60,23 @@
           ],
           "name": "documented",
           "arity": 1,
-          "doc": "Given a list of parsed modules, return a proplist representing\n  undocumented functions therein.\n\n```commonlisp\n[#(percentage   {{float 0.0-100.0}}\n #(undocumented [#({{ module name (atom) }}\n                   [\"{{function/arity}}\" ...]),...]))]\n```",
+          "doc": "Given a list of parsed modules, return a proplist representing\nundocumented functions therein.\n\n```commonlisp\n[#(percentage   {{float 0.0-100.0}}\n#(undocumented [#({{ module name (atom) }}\n                 [\"{{function/arity}}\" ...]),...]))]\n```\n",
           "line": 49
+        },
+        {
+          "patterns": [
+            "(mod)"
+          ],
+          "name": "mod-doc",
+          "arity": 1,
+          "doc": "",
+          "line": 111
         }
       ],
       "behaviour": [],
       "name": "lodox-parse",
-      "doc": "Parsing LFE source files for metadata.",
-      "filepath": "/Users/mohacker/src/lfe-rebar3/lodox/src/lodox-parse.lfe"
+      "doc": "Parsing LFE source files for metadata.\n",
+      "filepath": "/Users/mohacker/src/FrontendMasters/dojo/_checkouts/lodox/src/lodox-parse.lfe"
     },
     {
       "exports": [
@@ -77,7 +86,7 @@
           ],
           "name": "funcs",
           "arity": 2,
-          "doc": "Find the best-matching `def{un,macro}`.\n\n  Given a list of modules and a partial `def{un,macro}` string,\n  return the first matching definition.\n  If none is found, return `` 'undefined ``.\n\n  Equivalent to [[funcs/3]] with `` 'undefined `` as `starting-mod`.",
+          "doc": "Find the best-matching `def{un,macro}`.\n\nGiven a list of modules and a partial `def{un,macro}` string,\nreturn the first matching definition.\nIf none is found, return `` 'undefined ``.\n\nEquivalent to [[funcs/3]] with `` 'undefined `` as `starting-mod`.\n",
           "line": 8
         },
         {
@@ -86,14 +95,14 @@
           ],
           "name": "funcs",
           "arity": 3,
-          "doc": "Like [[funcs/2]], but give precedence to matches in `starting-mod`.",
+          "doc": "Like [[funcs/2]], but give precedence to matches in `starting-mod`.\n",
           "line": 18
         }
       ],
       "behaviour": [],
       "name": "lodox-search",
-      "doc": "Doc-searching functions.",
-      "filepath": "/Users/mohacker/src/lfe-rebar3/lodox/src/lodox-search.lfe"
+      "doc": "Doc-searching functions.\n",
+      "filepath": "/Users/mohacker/src/FrontendMasters/dojo/_checkouts/lodox/src/lodox-search.lfe"
     },
     {
       "exports": [
@@ -103,7 +112,7 @@
           ],
           "name": "namespace",
           "arity": 0,
-          "doc": "The namespace in which `lodox` is registered, `default`.",
+          "doc": "The namespace in which `lodox` is registered, `lfe`.\n",
           "line": 10
         },
         {
@@ -112,7 +121,7 @@
           ],
           "name": "provider-name",
           "arity": 0,
-          "doc": "The 'user friendly' name of the task, `lodox`.",
+          "doc": "The 'user friendly' name of the task, `lodox`.\n",
           "line": 14
         },
         {
@@ -121,7 +130,7 @@
           ],
           "name": "short-desc",
           "arity": 0,
-          "doc": "A one line, short description of the task, used in lists of providers.",
+          "doc": "A one line, short description of the task, used in lists of providers.\n",
           "line": 18
         },
         {
@@ -130,7 +139,7 @@
           ],
           "name": "deps",
           "arity": 0,
-          "doc": "The list of dependencies, providers, that need to run before this one.",
+          "doc": "The list of dependencies, providers, that need to run before this one.\n",
           "line": 22
         },
         {
@@ -139,7 +148,7 @@
           ],
           "name": "desc",
           "arity": 0,
-          "doc": "The description for the task, used by `rebar3 help`.",
+          "doc": "The description for the task, used by `rebar3 help`.\n",
           "line": 26
         },
         {
@@ -148,7 +157,7 @@
           ],
           "name": "init",
           "arity": 1,
-          "doc": "Initiate the Lodox provider.",
+          "doc": "Initiate the Lodox provider.\n",
           "line": 35
         },
         {
@@ -157,7 +166,7 @@
           ],
           "name": "do",
           "arity": 1,
-          "doc": "Generate documentation for each application in the project.\n\n  See: [[lodox-html-writer:write-docs/1]]",
+          "doc": "Generate documentation for each application in the project.\n\nSee: [[lodox-html-writer:write-docs/1]]\n",
           "line": 53
         },
         {
@@ -166,7 +175,7 @@
           ],
           "name": "format_error",
           "arity": 1,
-          "doc": "When an exception is raised or a value returned as\n  `#(error #((MODULE) reason)`, `(format_error reason)` will be called\n  so a string can be formatted explaining the issue.",
+          "doc": "When an exception is raised or a value returned as\n`#(error #((MODULE) reason)`, `(format_error reason)` will be called\nso a string can be formatted explaining the issue.\n",
           "line": 62
         },
         {
@@ -175,7 +184,7 @@
           ],
           "name": "write-docs",
           "arity": 1,
-          "doc": "Given an [app_info_t], call [[lodox-html-writer:write-docs/1]] appropriately.\n\n  [app_info_t]: https://github.com/rebar/rebar3/blob/master/src/rebar_app_info.erl",
+          "doc": "Given an [app_info_t], call [[lodox-html-writer:write-docs/1]] appropriately.\n\n[app_info_t]: https://github.com/rebar/rebar3/blob/master/src/rebar_app_info.erl\n",
           "line": 73
         },
         {
@@ -185,7 +194,7 @@
           ],
           "name": "get-lodox-opts",
           "arity": 2,
-          "doc": "Parse rebar.config for Lodox options.\n  If `name` is a binary, convert it to an atom first.",
+          "doc": "Parse rebar.config for Lodox options.\nIf `name` is a binary, convert it to an atom first.\n",
           "line": 95
         },
         {
@@ -194,7 +203,7 @@
           ],
           "name": "maybe-default",
           "arity": 3,
-          "doc": "Prepend `` `#(,key ,value) `` to `opts` iff `key` is not already defined.",
+          "doc": "Prepend `` `#(,key ,value) `` to `opts` iff `key` is not already defined.\n",
           "line": 107
         }
       ],
@@ -202,8 +211,8 @@
         "provider"
       ],
       "name": "lodox",
-      "doc": "The Lodox [Rebar3][1] [provider][2].\n\n  [1]: http://www.rebar3.org/docs/plugins\n  [2]: https://github.com/tsloughter/providers",
-      "filepath": "/Users/mohacker/src/lfe-rebar3/lodox/src/lodox.lfe"
+      "doc": "The Lodox [Rebar3][1] [provider][2].\n\n[1]: http://www.rebar3.org/docs/plugins\n[2]: https://github.com/tsloughter/providers\n",
+      "filepath": "/Users/mohacker/src/FrontendMasters/dojo/_checkouts/lodox/src/lodox.lfe"
     }
   ],
   "name": "lodox",
@@ -214,10 +223,12 @@
     "undocumented": {
       "lodox": [],
       "lodox-search": [],
-      "lodox-parse": [],
+      "lodox-parse": [
+        "mod-doc/1"
+      ],
       "lodox-json-writer": [],
       "lodox-html-writer": []
     },
-    "percentage": 100.0
+    "percentage": 94.74
   }
 }
