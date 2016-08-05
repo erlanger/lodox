@@ -15,7 +15,7 @@
       "behaviour": [],
       "name": "lodox-html-writer",
       "doc": "Documentation writer that outputs HTML.\n",
-      "filepath": "/Users/mohacker/src/FrontendMasters/dojo/_checkouts/lodox/src/lodox-html-writer.lfe"
+      "filepath": "/Users/mohacker/src/lfe-rebar3/lodox/src/lodox-html-writer.lfe"
     },
     {
       "exports": [
@@ -32,7 +32,7 @@
       "behaviour": [],
       "name": "lodox-json-writer",
       "doc": "Documentation writer that outputs JSON.\n",
-      "filepath": "/Users/mohacker/src/FrontendMasters/dojo/_checkouts/lodox/src/lodox-json-writer.lfe"
+      "filepath": "/Users/mohacker/src/lfe-rebar3/lodox/src/lodox-json-writer.lfe"
     },
     {
       "exports": [
@@ -76,7 +76,7 @@
       "behaviour": [],
       "name": "lodox-parse",
       "doc": "Parsing LFE source files for metadata.\n",
-      "filepath": "/Users/mohacker/src/FrontendMasters/dojo/_checkouts/lodox/src/lodox-parse.lfe"
+      "filepath": "/Users/mohacker/src/lfe-rebar3/lodox/src/lodox-parse.lfe"
     },
     {
       "exports": [
@@ -102,7 +102,7 @@
       "behaviour": [],
       "name": "lodox-search",
       "doc": "Doc-searching functions.\n",
-      "filepath": "/Users/mohacker/src/FrontendMasters/dojo/_checkouts/lodox/src/lodox-search.lfe"
+      "filepath": "/Users/mohacker/src/lfe-rebar3/lodox/src/lodox-search.lfe"
     },
     {
       "exports": [
@@ -212,11 +212,11 @@
       ],
       "name": "lodox",
       "doc": "The Lodox [Rebar3][1] [provider][2].\n\n[1]: http://www.rebar3.org/docs/plugins\n[2]: https://github.com/tsloughter/providers\n",
-      "filepath": "/Users/mohacker/src/FrontendMasters/dojo/_checkouts/lodox/src/lodox.lfe"
+      "filepath": "/Users/mohacker/src/lfe-rebar3/lodox/src/lodox.lfe"
     }
   ],
   "name": "lodox",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "The LFE rebar3 Lodox plugin.",
   "libs": [],
   "documented": {
