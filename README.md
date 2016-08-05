@@ -12,7 +12,7 @@
 [latest release]: https://github.com/lfe-rebar3/lodox/releases/latest
 [erlang badge]: https://img.shields.io/badge/erlang-R16B03%20%7C%20%E2%89%A517.5-red.svg
 [erlang downloads]: http://www.erlang.org/downloads
-[doc badge]: https://img.shields.io/badge/docs-100%25-green.svg
+[doc badge]: https://img.shields.io/badge/docs-94%25-green.svg
 [docs]: http://lfe-rebar3.github.io/lodox
 [license badge]: https://img.shields.io/badge/license-MIT-blue.svg
 
