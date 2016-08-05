@@ -1,6 +1,6 @@
 {application,    lodox, [
   {description,  "The LFE rebar3 Lodox plugin."},
-  {vsn,          "0.15.0"},
+  {vsn,          "0.15.1"},
   {modules,      [lodox,
                   'lodox-html-writer', 'lodox-json-writer',
                   'lodox-parse', 'lodox-search', lodox, 'unit-lodox-tests']},
