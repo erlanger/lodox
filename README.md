@@ -30,11 +30,11 @@ project's `rebar.config`:
 ```erlang
 {plugins, [
   %% ...
-  {'lfe-compile', {git, "git://github.com/lfe-rebar3/compile", {tag, "0.4.0"}}}
+  {'lfe-compile', {git, "git://github.com/lfe-rebar3/compile", {tag, "0.5.0"}}}
 ]}.
 ```
 
-Then in your project's `rebar.config`, include the [provider post-hook][]:
+Then in your project's `rebar.config`, include the [provider pre-hook][]:
 
 ```erlang
 {provider_hooks, [{pre, [{compile, {lfe, compile}}]}]}
