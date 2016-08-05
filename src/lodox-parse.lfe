@@ -109,27 +109,26 @@
    (lists:filtermap #'mod-docs/1 mods)))
 
 (defun mod-doc (mod)
-  (case (ldoc-chunk mod)
-    (#"Missing \"LDoc\" chunk." 'false)
-    (`#(lfe_docs_v1 ,docs ,mod-doc)
-     (-> (match-lambda
-           ([`#(doc function true #(,name ,arity) ,patterns ,doc ,line)]
-            `#(true [#(name     ,name)
-                     #(arity    ,arity)
-                     #(patterns ,patterns)
-                     #(doc      ,doc)
-                     #(line     ,line)]))
-           ([_] 'false))
-         (lists:filtermap docs)
-         (tuple mod-doc)))))
+  (case (lfe_doc:get_module_docs mod)
+    (`#(error ,_) 'false)
+    (`#(ok ,chunk)
+     (-> (lambda (doc)
+           (if (=:= 'function (lfe_doc:mf_doc_type doc))
+             `#(true [#(name     ,(lfe_doc:function_name doc))
+                      #(arity    ,(lfe_doc:function_arity doc))
+                      #(patterns ,(patterns (lfe_doc:function_patterns doc)))
+                      #(doc      ,(flatten (lfe_doc:function_doc doc)))
+                      #(line     ,(lfe_doc:function_line doc))])))
+         (lists:filtermap (lfe_doc:mf_docs chunk))
+         (tuple (flatten (lfe_doc:module_doc chunk)))))))
 
 (defun mod-name (mod) (call mod 'module_info 'module))
 
 (defun patterns (forms) (lists:map #'pattern/1 forms))
 
 (defun pattern
-  ([`(,patt ,(= `(when . ,_) guard) . ,_)] `(,@patt ,guard))
-  ([`(,arglist . ,_)] arglist))
+  ([`#(,patt  [])]        patt)
+  ([`#(,patt ,guard)] `(,@patt (when ,@guard))))
 
 (defun func-name (def)
   "Given a parsed def{un,macro} form (map), return a string, `\"name/arity\"`."
@@ -137,14 +136,11 @@
        (io_lib:format "~s/~w")
        (iolist_to_binary)))
 
-(defun ldoc-chunk (mod)
-  "Return a given `beam` module's `\"LDoc\"` chunk as a term.
-
-  If the chunk is missing, return `#\"Missing \"LDoc\" chunk.\"`."
-  (case (beam_lib:chunks (code:which mod) '["LDoc"] '[allow_missing_chunks])
-    (`#(ok #(,_ [#("LDoc" missing_chunk)])) #"Missing \"LDoc\" chunk.")
-    (`#(ok #(,_ [#("LDoc" ,chunk)]))        (binary_to_term chunk))))
-
 (defun filter-excluded (excluded-modules modules)
   (-> (lambda (module) (not (lists:member module excluded-modules)))
       (lists:filter modules)))
+
+(defun flatten
+  ([lines] (when (is_list lines))
+   (iolist_to_binary (lists:map (lambda (line) (list line #"\n")) lines)))
+  ([bin] bin))
