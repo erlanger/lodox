@@ -1,44 +1,25 @@
 (defmodule lodox-html-writer
-  (doc "Documentation writer that outputs HTML.")
+  "Documentation writer that outputs HTML."
   (export (write-docs 1))
   (import (from levaindoc (markdown_github->html 1 ))))
 
 (include-lib "clj/include/compose.lfe")
-
 (include-lib "exemplar/include/html-macros.lfe")
-
 (include-lib "lodox/include/lodox-macros.lfe")
 
-(defun write-docs (project)
+(defun write-docs (app)
   "Take raw documentation info and turn it into formatted HTML.
-Write to and return `output-path` in `opts`. Default: `\"doc\"`
-
-N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
-  (let* ((`#(ok ,cwd) (file:get_cwd))
-         (output-path (maps:get 'output-path project "doc"))
-         (app-dir     (maps:get 'app-dir project cwd))
-         (project*    (-> project
-                          (mset 'app-dir app-dir)
-                          (mset 'modules
-                                (let ((excluded-modules
-                                       (maps:get 'excluded-modules project [])))
-                                  (lists:foldl
-                                    (match-lambda
-                                      ([(= `#m(name ,name) module) acc]
-                                       (if (lists:member name excluded-modules)
-                                         acc
-                                         (cons module acc))))
-                                    [] (mref project 'modules)))))))
-    (doto output-path
-          (ensure-dirs '["css" "js"])
-          (copy-resource "css/default.css")
-          (copy-resource "css/hk-pyg.css")
-          (copy-resource "js/jquery.min.js")
-          (copy-resource "js/page_effects.js")
-          (write-index        project*)
-          (write-modules      project*)
-          (write-libs         project*)
-          (write-undocumented project*))))
+  Write to and return `output-path` in `app`. Default: `\"./doc\"`"
+  (doto (proplists:get_value 'output-path app "doc")
+    (ensure-dirs '["css" "js"])
+    (copy-resource "css/default.css")
+    (copy-resource "css/hk-pyg.css")
+    (copy-resource "js/jquery.min.js")
+    (copy-resource "js/page_effects.js")
+    (write-index        app)
+    (write-modules      app)
+    (write-libs         app)
+    (write-undocumented app)))
 
 (defun include-css (style)
   (link `[type "text/css" href ,style rel "stylesheet"]))
@@ -52,29 +33,35 @@ N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
 ```"
   (a `[href ,uri] content))
 
-(defun func-id
-  ([func] (when (is_map func))
-   (func-id (func-name func)))
-  ([fname] (when (is_list fname))
-   (-> (http_uri:encode (h fname))
-       (re:replace "%" "." '[global #(return list)])
-       (->> (++ "func-")))))
+(defun func-id (func)
+  (if (clj-p:string? func)
+    (-> (http_uri:encode (h func))
+        (re:replace "%" "." '[global #(return list)])
+        (->> (++ "func-")))
+    (func-id (func-name func))))
 
-(defun format-docstring (project m) (format-docstring project [] m))
+(defun format-docstring (app def) (format-docstring app 'undefined def))
 
-(defun format-docstring (project module func)
-  (format-docstring project module func (maps:get 'format func 'markdown)))
+(defun format-docstring (app module func)
+  ;; TODO: make format configurable
+  (format-docstring app module func 'markdown))
 
-(defun format-docstring
-  ([_project _mod (map 'doc "") _format]   "")
-  ([_project _mod `#m(doc ,doc) 'plaintext] (pre '[class "plaintext"] (h doc)))
-  ([project mod `#m(doc ,doc) 'markdown] (when (is_map mod))
-   (let ((name (maps:get 'name mod 'undefined))
-         (html (markdown->html (unicode:characters_to_list doc))))
-     (format-wikilinks project html name)))
-  ([project mod `#m(name ,name doc ,doc) 'markdown]
-   (let ((html (markdown->html (unicode:characters_to_list doc))))
-     (format-wikilinks project html name))))
+(defun format-docstring (app mod def format)
+  ;; TODO: ensure binary
+  (case (proplists:get_value 'doc def #"")
+    (#"" "")
+    (doc
+     (case format
+       ('plaintext
+        (pre '[class "plaintext"] (h doc)))
+       ('markdown (when (is_list mod))
+        (let ((name (proplists:get_value 'name mod))
+              (html (markdown->html (unicode:characters_to_list doc))))
+          (format-wikilinks app html name)))
+       ('markdown
+        (let ((name (proplists:get_value 'name def))
+              (html (markdown->html (unicode:characters_to_list doc))))
+          (format-wikilinks app html name)))))))
 
 (defun markdown->html (markdown)
   "Given a Markdown string, convert it to HTML.
@@ -86,43 +73,45 @@ N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
     ('false (exit "Pandoc is required."))
     (pandoc (let ((`#(ok ,html) (markdown_github->html markdown))) html))))
 
-(defun format-wikilinks
-  ([`#m(libs ,libs modules ,modules) html init]
-   (case (re:run html "\\[\\[([^\\[]+/\\d+)\\]\\]"
-                 '[global #(capture all_but_first)])
-     ('nomatch html)
-     (`#(match ,matches)
-      (let ((to-search (++ modules libs)))
-        (-> (match-lambda
-              ([`#(,start ,length)]
-               (let* ((match (lists:sublist html (+ 1 start) length))
-                      (mfa   (lodox-search:funcs to-search match init)))
-                 (iff (=/= mfa 'undefined)
-                   (let ((`#(,mod [,_ . ,fname])
-                          (lists:splitwith (lambda (c) (=/= c #\:)) mfa)))
-                     `#(true #(,(re-escape (++ "[[" match "]]"))
-                               ,(link-to (func-uri mod fname)
-                                  (if (=:= (atom_to_list init) mod)
-                                    (h fname)
-                                    (h (++ mod ":" fname)))))))))))
-            (lists:filtermap (lists:flatten matches))
-            (->> (fold-replace html))))))))
+(defun format-wikilinks (app html init)
+  (case (re:run html "\\[\\[([^\\[]+/\\d+)\\]\\]"
+                '[global #(capture all_but_first)])
+    ('nomatch html)
+    (`#(match ,matches)
+     (let ((to-search (++ (proplists:get_value 'modules app)
+                          (proplists:get_value 'libs    app))))
+       (-> (match-lambda
+             ([`#(,start ,length)]
+              (let* ((match (lists:sublist html (+ 1 start) length))
+                     (mfa   (lodox-search:funcs to-search match init)))
+                (iff (=/= mfa 'undefined)
+                  (let ((`#(,mod [,_ . ,fname])
+                         (lists:splitwith (lambda (c) (=/= c #\:)) mfa)))
+                    `#(true #(,(re-escape (++ "[[" match "]]"))
+                              ,(link-to (func-uri mod fname)
+                                 (if (=:= (atom_to_list init) mod)
+                                   (h fname)
+                                   (h (++ mod ":" fname)))))))))))
+           (lists:filtermap (lists:flatten matches))
+           (->> (fold-replace html)))))))
 
-(defun index-by (k ms) (lists:foldl (lambda (m mm) (mset mm (mref m k) m)) (map) ms))
+(defun index-by (k plists)
+  (lists:foldl
+    (lambda (p pp) (-> (proplists:get_value k p) (tuple p) (cons pp)))
+    [] plists))
 
-(defun mod-filename
-  ([mod] (when (is_map mod))
-   (mod-filename (mod-name mod)))
-  ([mname] (when (is_list mname))
-   (++ mname ".html")))
+(defun mod-filename (mod)
+  (if (clj-p:string? mod)
+    (++ mod ".html")
+    (mod-filename (mod-name mod))))
 
 (defun mod-filepath (output-dir module)
   (filename:join output-dir (mod-filename module)))
 
-(defun mod-name (mod) (atom_to_list (mref mod 'name)))
+(defun mod-name (mod) (atom_to_list (proplists:get_value 'name mod)))
 
 (defun doc-filename (doc)
-  (++ (mref doc 'name) ".html"))
+  (++ (proplists:get_value 'name doc) ".html"))
 
 (defun doc-filepath (output-dir doc)
   (filename:join output-dir (doc-filename doc)))
@@ -130,55 +119,53 @@ N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
 (defun func-uri (module func)
   (++ (mod-filename module) "#" (func-id func)))
 
-(defun func-source-uri (source-uri project module func)
-  (let* ((offset   (+ 1 (length (mref project 'app-dir))))
-         (filepath (lists:nthtail offset (mref module 'filepath)))
-         (line     (integer_to_list (mref func 'line)))
-         (version  (mref project 'version)))
+(defun func-source-uri (source-uri app module func)
+  (let* ((offset    (+ 1 (length (proplists:get_value 'app-dir app))))
+         (filepath* (proplists:get_value 'filepath module))
+         (filepath  (binary:part filepath* offset (- (size filepath*) offset)))
+         (line      (integer_to_binary (proplists:get_value 'line func)))
+         (version   (proplists:get_value 'version app)))
     (fold-replace source-uri
       `[#("{filepath}"  ,filepath)
         #("{line}"      ,line)
         #("{version}"   ,version)])))
 
-(defun index-link (project on-index?)
+(defun index-link (_app on-index?)
   `[,(h3 '[class "no-link"] (span '[class "inner"] "Application"))
     ,(ul '[class "index-link"]
          (li `[class ,(++ "depth-1" (if on-index? " current" ""))]
              (link-to "index.html" (div '[class "inner"] "Index"))))])
 
-(defun includes-menu
-  ([`#m(libs ,libs) current-lib]
-   (make-menu "Includes" libs current-lib)))
+(defun includes-menu (app current-lib)
+  (make-menu "Includes" (proplists:get_value 'libs app) current-lib))
 
-(defun modules-menu
-  ([`#m(modules ,modules) current-mod]
-   (make-menu "Modules" modules current-mod)))
+(defun modules-menu (app current-mod)
+  (make-menu "Modules" (proplists:get_value 'modules app) current-mod))
 
 (defun make-menu
   ([_heading [] _current] [])
-  ([heading maps current]
+  ([heading plists current]
    (flet ((menu-item
-           ([`#(,name ,m)]
-            (let ((class (++ "depth-1" (if (=:= m current) " current" "")))
+           ([`#(,name ,mod)]
+            (let ((class (++ "depth-1" (if (=:= mod current) " current" "")))
                   (inner (div '[class "inner"] (h (atom_to_list name)))))
-              (li `[class ,class] (link-to (mod-filename m) inner))))))
-     `[,(h3 '[class "no-link"] (span '[class "inner"] heading))
-       ,(ul (lists:map #'menu-item/1 (maps:to_list (index-by 'name maps))))])))
+              (li `[class ,class] (link-to (mod-filename mod) inner))))))
+     (list (h3 '[class "no-link"] (span '[class "inner"] heading))
+           (ul (lists:map #'menu-item/1 (index-by 'name plists)))))))
 
-(defun primary-sidebar (project) (primary-sidebar project []))
+(defun primary-sidebar (app) (primary-sidebar app []))
 
-(defun primary-sidebar (project current)
+(defun primary-sidebar (app current)
   (div '[class "sidebar primary"]
-    `[,(index-link project (lodox-p:null? current))
-      ,(includes-menu project current)
-      ,(modules-menu project current)]))
+    `[,(index-link app (=:= () current))
+      ,(includes-menu app current)
+      ,(modules-menu app current)]))
 
 (defun sorted-exported-funcs (module)
-  (lists:sort
-    (lambda (a b)
-      (=< (string:to_lower (func-name a))
-          (string:to_lower (func-name b))))
-    (mref module 'exports)))
+  (-> (lambda (a b)
+        (=< (string:to_lower (func-name a))
+            (string:to_lower (func-name b))))
+      (lists:sort (proplists:get_value 'exports module))))
 
 (defun funcs-sidebar (module)
   (div '[class "sidebar secondary"]
@@ -199,40 +186,44 @@ N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
     ,(include-js "js/jquery.min.js")
     ,(include-js "js/page_effects.js")])
 
-(defun project-title (project)
+(defun project-title (app)
   (span '[class "project-title"]
-    `[,(span '[class "project-name"]    (h (mref project 'name))) " "
-      ,(span '[class "project-version"] (h (mref project 'version)))]))
+    (list (span '[class "project-name"]
+            (h (proplists:get_value 'name app)))
+          " "
+          (span '[class "project-version"]
+            (h (proplists:get_value 'version app))))))
 
-(defun header* (project)
+(defun header* (app)
   (div '[id "header"]
     `[,(h2 `["Generated by "
              ,(link-to "https://github.com/lfe-rebar3/lodox" "Lodox")])
       ,(h1 (link-to "index.html"
-             `[,(project-title project) " "
+             `[,(project-title app) " "
                ,(span '[class "project-documented"]
-                  (io_lib:format "(~w% documented)"
-                    `[,(-> (mref project 'documented)
-                           (mref 'percentage)
-                           (round))]))]))]))
+                  (->> (proplists:get_value 'documented app)
+                       (proplists:get_value 'percentage)
+                       (round)
+                       (list)
+                       (io_lib:format "(~w% documented)")))]))]))
 
-(defun index-page (project)
+(defun index-page (app)
   (html
     `[,(head
          `[,(default-includes)
-           ,(title (++ (h (mref project 'name)) " "
-                       (h (mref project 'version))))])
+           ,(title (++ (h (proplists:get_value 'name app)) " "
+                       (h (proplists:get_value 'version app))))])
       ,(body
-         `[,(header* project)
-           ,(primary-sidebar project)
+         `[,(header* app)
+           ,(primary-sidebar app)
            ,(div '[id "content" class "module-index"]
-              `[,(h1 (project-title project))
-                ,(case (mref project 'description)
+              `[,(h1 (project-title app))
+                ,(case (proplists:get_value 'description app)
                    ("" "")
                    (doc (div '[class "doc"] (p (h doc)))))
                 ,(case (lists:sort
                          (lambda (a b) (=< (mod-name a) (mod-name b)))
-                         (mref project 'libs))
+                         (proplists:get_value 'libs app))
                    ([] "")
                    (libs
                     `[,(h2 "Includes")
@@ -258,7 +249,7 @@ N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
                      (div '[class "module"]
                        `[,(h3 (link-to (mod-filename module)
                                 (h (mod-name module))))
-                         ,(case (format-docstring project [] module)
+                         ,(case (format-docstring app [] module)
                             (""  "")
                             ;; TODO: summarize
                             (doc (div '[class "doc"] doc)))
@@ -274,27 +265,27 @@ N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
                                   (sorted-exported-funcs module)))])]))
                    (lists:sort
                      (lambda (a b) (=< (mod-name a) (mod-name b)))
-                     (mref project 'modules)))])])]))
+                     (proplists:get_value 'modules app)))])])]))
 
 ;; TODO: exemplar-ify this
 (defun unordered-list (lst) (ul (lists:map #'li/1 lst)))
 
 #|
 (defun format-document
-  ([project (= doc `#m(format ,format))] (when (=:= format 'markdown))
+  ([app (= doc `#m(format ,format))] (when (=:= format 'markdown))
    ;; TODO: render markdown
-   `[div (class "markdown") ,(mref doc 'content)]))
+   `[div (class "markdown") ,(proplists:get_value 'content doc)]))
 
-(defun document-page (project doc)
+(defun document-page (app doc)
   (html
     (head
       `[,(default-includes)
-        ,(title (h (mref doc 'title)))])
+        ,(title (h (proplists:get_value 'title doc)))])
     (body
-      `[,(header* project)
-        ,(primary-sidebar project doc)
+      `[,(header* app)
+        ,(primary-sidebar app doc)
         ,(div '[id "content" class "document"]
-           (div '[id "doc"] (format-document project doc)))])))
+           (div '[id "doc"] (format-document app doc)))])))
 |#
 
 (defun func-usage (func)
@@ -302,15 +293,15 @@ N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
     (lambda (pattern)
       (re:replace (lfe_io_pretty:term pattern) "comma " ". ,"
                   '[global #(return list)]))
-    (mref func 'patterns)))
+    (proplists:get_value 'patterns func)))
 
 (defun mod-behaviour (mod)
   (lists:map
     (lambda (behaviour)
       (h4 '[class "behaviour"] (atom_to_list behaviour)))
-    (mref mod 'behaviour)))
+    (proplists:get_value 'behaviour mod)))
 
-(defun func-docs (project module func)
+(defun func-docs (app module func)
   (div `[class "public anchor" id ,(h (func-id func))]
     `[,(h3 (h (func-name func)))
       ,(case (func-usage func)
@@ -323,44 +314,46 @@ N.B. [[write-docs/1]] makes great use of [[doto/255]] under the hood."
                 (string:join "\n")
                 (markdown->html)))))
       ,(div '[class "doc"]
-         (format-docstring project module func))
+         (format-docstring app module func))
       ;; TODO: members?
-      ,(case (maps:get 'source-uri project 'undefined)
+      ,(case (proplists:get_value 'source-uri app)
          ('undefined [])                ; Log failure to generate link?
          (source-uri
           (div '[class "src-link"]
-            (link-to (func-source-uri source-uri project module func)
+            (link-to (func-source-uri source-uri app module func)
               "view source"))))]))
 
-(defun module-page (project module)
+(defun module-page (app module)
   (html
     `[,(head
          `[,(default-includes)
            ,(title (++ (h (mod-name module)) " documentation"))])
       ,(body
-         `[,(header* project)
-           ,(primary-sidebar project module)
+         `[,(header* app)
+           ,(primary-sidebar app module)
            ,(funcs-sidebar module)
            ,(div '[id "content" class "module-docs"]
               `[,(h1 '[id "top" class "anchor"] (h (mod-name module)))
                 ,(mod-behaviour module)
-                ,(div '[class "doc"] (format-docstring project [] module))
-                ,(lists:map (lambda (func) (func-docs project module func))
+                ,(div '[class "doc"] (format-docstring app [] module))
+                ,(lists:map (lambda (func) (func-docs app module func))
                    (sorted-exported-funcs module))])])]))
 
-(defun lib-page (project lib)
+(defun lib-page (app lib)
   (html
     `[,(head
          `[,(default-includes)
-           ,(title (++ (h (mref lib 'name)) " documentation"))])
+           ,(title (++ (h (proplists:get_value 'name lib))
+                       " documentation"))])
       ,(body
-         `[,(header* project)
-           ,(primary-sidebar project lib)
+         `[,(header* app)
+           ,(primary-sidebar app lib)
            ,(funcs-sidebar lib)
            ,(div '[id "content" class "module-docs"] ; TODO: confirm this
-              `[,(h1 '[id "top" class "anchor"] (h (mref lib 'name)))
-                ,(lists:map (lambda (func) (func-docs project lib func))
-                   (sorted-exported-funcs lib))])])]))
+              (list (h1 '[id "top" class "anchor"]
+                        (h (proplists:get_value 'name lib)))
+                    (lists:map (lambda (func) (func-docs app lib func))
+                      (sorted-exported-funcs lib))))])]))
 
 (defun copy-resource (output-dir resource)
   (let* ((this  (proplists:get_value 'source (module_info 'compile)))
@@ -387,42 +380,48 @@ If something goes wrong, throw a descriptive error."
   "Given a `path` and `dir`ectory name, call [[ensure-dir/1]] on `path`/`dir`."
   (ensure-dir (filename:join path dir)))
 
-(defun write-index (output-dir project)
+(defun write-index (output-dir app)
   (file:write_file (filename:join output-dir "index.html")
-                   (index-page project)))
+                   (index-page app)))
 
-(defun write-modules (output-dir project)
+(defun write-modules (output-dir app)
   (flet ((write-module (module)
            (-> (mod-filepath output-dir module)
-               (file:write_file (module-page project module)))))
-    (lists:foreach #'write-module/1 (mref project 'modules))))
+               (file:write_file (module-page app module)))))
+    (lists:foreach #'write-module/1 (proplists:get_value 'modules app))))
 
-(defun write-libs (output-dir project)
+(defun write-libs (output-dir app)
   (flet ((write-lib (lib)
            (file:write_file (mod-filepath output-dir lib)
-                            (lib-page project lib))))
-    (lists:foreach #'write-lib/1 (mref project 'libs))))
+                            (lib-page app lib))))
+    (lists:foreach #'write-lib/1 (proplists:get_value 'libs app))))
 
-(defun write-undocumented
-  ([output-dir `#m(documented #m(undocumented ,undocumented))]
-   (-> (maps:fold
-         (lambda (k v acc)
-           (-> (io_lib:format "== ~s ==~n~s~n" `[,k ,(string:join v "\n")])
-               (cons acc)))
-         "" undocumented)
-       (string:join "\n")
-       (->> (file:write_file (filename:join output-dir "undocumented.txt"))))))
+(defun write-undocumented (output-dir app)
+  (let ((undocumented (clj-seq:get-in app '[documented undocumented]))
+        (output-file  (filename:join output-dir "undocumented.txt"))
+        (collect      (match-lambda
+                        ([`#(,_mod []) acc] acc)
+                        ([`#(,mod ,exports) acc]
+                         (-> (cons (car exports)
+                                   (lc ((<- export (cdr exports)))
+                                     (list #"\n" export)))
+                             (->> (list mod) (io_lib:format "== ~s ==~n~s~n"))
+                             (cons acc))))))
+    (case (lists:foldl collect "" undocumented)
+      (""    (if (filelib:is_file output-file) (file:delete output-file) 'ok))
+      (lines (->> (string:join lines "\n") (file:write_file output-file))))))
 
 #|
-(defun write-documents (output-dir project)
+(defun write-documents (output-dir app)
   (flet ((write-document (document)
            (-> (doc-filepath output-dir document)
-               (file:write_file (document-page project document)))))
-    (lists:foreach #'write-document/1 (mref project 'documents))))
+               (file:write_file (document-page app document)))))
+    (lists:foreach #'write-document/1 (proplists:get_value 'documents app))))
 |#
 
 (defun func-name (func)
-  (++ (h (mref func 'name)) "/" (integer_to_list (mref func 'arity))))
+  (->> (integer_to_list (proplists:get_value 'arity func))
+       (++ (h (proplists:get_value 'name func)) "/")))
 
 (defun h (text)
   "Convenient alias for escape-html/1."

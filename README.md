@@ -3,16 +3,16 @@
 [![Travis CI][travis badge]][travis builds]
 [![Release][tag badge]][latest release]
 [![Erlang][erlang badge]][erlang downloads]
-[![Documentation][doc badge]](docs)
+[![Documentation][doc badge]][docs]
 [![MIT License][license badge]](LICENSE)
 
 [travis builds]: https://travis-ci.org/lfe-rebar3/lodox
 [travis badge]: https://travis-ci.org/lfe-rebar3/lodox.svg
 [tag badge]: https://img.shields.io/github/tag/lfe-rebar3/lodox.svg
 [latest release]: https://github.com/lfe-rebar3/lodox/releases/latest
-[erlang badge]: https://img.shields.io/badge/erlang-%E2%89%A518.0-red.svg
+[erlang badge]: https://img.shields.io/badge/erlang-R16B03%20%7C%20%E2%89%A517.5-red.svg
 [erlang downloads]: http://www.erlang.org/downloads
-[doc badge]: https://img.shields.io/badge/docs-91%25-green.svg
+[doc badge]: https://img.shields.io/badge/docs-100%25-green.svg
 [docs]: http://lfe-rebar3.github.io/lodox
 [license badge]: https://img.shields.io/badge/license-MIT-blue.svg
 
@@ -30,11 +30,11 @@ project's `rebar.config`:
 ```erlang
 {plugins, [
   %% ...
-  {'lfe-compile', {git, "git://github.com/lfe-rebar3/compile", {tag, "0.4.0"}}}
+  {'lfe-compile', {git, "git://github.com/lfe-rebar3/compile", {tag, "0.5.0"}}}
 ]}.
 ```
 
-Then in your project's `rebar.config`, include the [provider post-hook][]:
+Then in your project's `rebar.config`, include the [provider pre-hook][]:
 
 ```erlang
 {provider_hooks, [{pre, [{compile, {lfe, compile}}]}]}
@@ -45,7 +45,7 @@ Finally, add Lodox to your `project_plugins` list.
 ```erlang
 {project_plugins, [
   %% ...
-  {lodox, {git, "git://github.com/lfe-rebar3/lodox.git", {tag, "0.12.15"}}}
+  {lodox, {git, "git://github.com/lfe-rebar3/lodox.git", {tag, "0.15.0"}}}
 ]}.
 ```
 

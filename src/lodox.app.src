@@ -1,12 +1,10 @@
-{application,    'lodox', [
-  {description,  "The LFE rebar3 Lodox plugin"},
-  {vsn,          "0.12.15"},
+{application,    lodox, [
+  {description,  "The LFE rebar3 Lodox plugin."},
+  {vsn,          "0.15.0"},
   {modules,      [lodox,
-                  'lodox-html-writer', 'lodox-p', 'lodox-parse', 'lodox-search',
-                  'unit-lodox-tests']},
-  {registered,   []},
-  {applications, [kernel, stdlib]},
-  {env,          []},
+                  'lodox-html-writer', 'lodox-json-writer',
+                  'lodox-parse', 'lodox-search', lodox, 'unit-lodox-tests']},
+  {applications, [kernel, stdlib, lfe, clj, exemplar, levaindoc, jsx]},
 
   {maintainers,  ["Eric Bailey"]},
   {licenses,     ["MIT"]},
