@@ -75,10 +75,10 @@ rebar3 do compile, lfe lodox
 
 If all goes well, the output will look something like:
 
-    Generated lodox vX.Y.Z docs in /path/to/lodox/doc
+    Generated lodox vX.Y.Z docs in /path/to/lodox/docs
 
-And, as promised, [generated documentation][docs] will be in the `doc` (or
-`{'output-path', "path/to/doc"}`) subdirectory of your project.
+And, as promised, [generated documentation][docs] will be in the `docs/` (or
+`{'output-path', "path/to/docs"}`) subdirectory of your project.
 
 
 ## Source Links

@@ -6,9 +6,9 @@
 
 (defun write-docs (app)
   "Take raw documentation info and turn it into JSON.
-  Write to and return `output-path` in `app`. Default: `\"./doc\"`"
+  Write to and return `output-path` in `app`. Default: `\"./docs\"`"
   (let* ((json        (jsx:encode (do-modules app) '[space #(indent 2)]))
-         (output-path (proplists:get_value 'output-path app "doc"))
+         (output-path (proplists:get_value 'output-path app "docs"))
          ('ok         (filelib:ensure_dir output-path))
          (app-name    (proplists:get_value 'name app))
          (filename    (binary (app-name binary) ".json")))

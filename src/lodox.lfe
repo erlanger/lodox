@@ -80,7 +80,7 @@
          (lodox-opts       (get-lodox-opts name opts))
          (excluded-modules (proplists:get_value 'excluded-modules lodox-opts []))
          (ebin-dir         (filename:join out-dir "ebin"))
-         (doc-dir          (filename:join app-dir "doc")))
+         (doc-dir          (filename:join app-dir "docs")))
     (rebar_api:debug "Adding ~p to the code path" `[,ebin-dir])
     (code:add_patha ebin-dir)
     (let ((app (++ (lodox-parse:docs name excluded-modules)

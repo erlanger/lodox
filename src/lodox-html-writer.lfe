@@ -9,8 +9,8 @@
 
 (defun write-docs (app)
   "Take raw documentation info and turn it into formatted HTML.
-  Write to and return `output-path` in `app`. Default: `\"./doc\"`"
-  (doto (proplists:get_value 'output-path app "doc")
+  Write to and return `output-path` in `app`. Default: `\"./docs\"`"
+  (doto (proplists:get_value 'output-path app "docs")
     (ensure-dirs '["css" "js"])
     (copy-resource "css/default.css")
     (copy-resource "css/hk-pyg.css")
