@@ -4,7 +4,7 @@
        {ref,"10fec22c8b01055efc26023272251d5d1e1112be"}},
   0},
  {<<"exemplar">>,
-  {git,"git://github.com/lfex/exemplar",
+  {git,"git://github.com/lfex/exemplar.git",
        {ref,"c2035e6cae400d146c37f1345a3ab24928234436"}},
   0},
  {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.0">>},0},
@@ -13,7 +13,7 @@
        {ref,"495cfa95682a3962ddd527c935a5afa6b808f848"}},
   1},
  {<<"levaindoc">>,
-  {git,"git://github.com/quasiquoting/levaindoc",
+  {git,"git://github.com/quasiquoting/levaindoc.git",
        {ref,"b924c26c2ad430abf7183c77becacfda27965176"}},
   0},
  {<<"lfe">>,{pkg,<<"lfe">>,<<"1.1.1">>},0},
@@ -22,7 +22,7 @@
        {ref,"94140845563f96d2a6fb356524d867b906088b20"}},
   2},
  {<<"lutil">>,
-  {git,"git://github.com/lfex/lutil",
+  {git,"git://github.com/lfex/lutil.git",
        {ref,"0ee02e01d643caba7a0b8365c477aea8d92bf309"}},
   1}]}.
 [
