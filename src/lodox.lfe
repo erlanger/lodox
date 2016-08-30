@@ -44,7 +44,7 @@
                  #(short_desc ,(short-desc))      ; A one-line description
                  #(desc       ,(desc))            ; A longer description
                  #(bare       true)               ; Task can be run by user
-                 #(profiles   [doc])])
+                 #(profiles   [docs])])
          (provider (providers:create opts)))
     (let ((state* (rebar_state:add_provider state provider)))
       (rebar_api:debug "Initialized lodox" [])
