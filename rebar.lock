@@ -1,3 +1,4 @@
+{"1.1.0",
 [{<<"clj">>,
   {git,"git://github.com/lfex/clj",
        {ref,"10fec22c8b01055efc26023272251d5d1e1112be"}},
@@ -23,4 +24,9 @@
  {<<"lutil">>,
   {git,"git://github.com/lfex/lutil",
        {ref,"0ee02e01d643caba7a0b8365c477aea8d92bf309"}},
-  1}].
+  1}]}.
+[
+{pkg_hash,[
+ {<<"jsx">>, <<"749BEC6D205C694AE1786D62CEA6CC45A390437E24835FD16D12D74F07097727">>},
+ {<<"lfe">>, <<"F57D2D705AB239CE171318DD31F4E374558266A88E1435F91045C1E8A2965D9C">>}]}
+].
