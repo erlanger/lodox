@@ -4,8 +4,6 @@
   (import (rename erlang ((list_to_float 1) list->float))))
 
 (include-lib "clj/include/compose.lfe")
-(include-lib "lodox/include/lodox-macros.lfe")
-
 
 ;;;===================================================================
 ;;; API
@@ -22,13 +20,13 @@
 
 ```commonlisp
 [#(name        #\"lodox\")
- #(version     \"0.15.0\")
+ #(version     \"0.16.2\")
  #(description \"The LFE rebar3 Lodox plugin\")
  #(documents   [])
  #(modules     {{list of proplists of module metadata}})
  #(documented  {{ see documented/1 }})]
 ```"
-  (let* ((app         (doto (binary_to_atom app-name 'latin1)
+  (let* ((app         (clj:doto (binary_to_atom app-name 'latin1)
                         (application:load)))
          (app-info    (let ((`#(ok ,info) (application:get_all_key app)))
                         info))
@@ -96,7 +94,7 @@
 (defun mod-docs
   ([mod] (when (is_atom mod))
    (let ((file (proplists:get_value 'source (call mod 'module_info 'compile))))
-     (iff (=:= ".lfe" (filename:extension file))
+     (clj:iff (=:= ".lfe" (filename:extension file))
        (case (mod-doc mod)
          (`#(,exports ,mod-doc)
           `#(true [#(name      ,(mod-name mod))

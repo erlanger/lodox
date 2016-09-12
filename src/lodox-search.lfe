@@ -27,9 +27,10 @@
                      (lambda (func-name)
                        (=/= (atom->string starting-mod) (module func-name)))
                      matches)))
-    (if (null? external)
-      (if (null? matches) 'undefined (car matches))
-      (car external))))
+    (cond
+     ((not (clj:nil? external)) (car external))
+     ((clj:nil? matches)        'undefined)
+     ('true                     (car matches)))))
 
 
 ;;;===================================================================
@@ -49,5 +50,3 @@
   (lists:takewhile (lambda (c) (=/= c #\:)) func-name))
 
 (defun get (plist key) (proplists:get_value key plist))
-
-(defun null? ([()] 'true) ([_] 'false))
