@@ -1,31 +1,32 @@
 (defmodule lodox-search
   "Doc-searching functions."
-  (export (funcs 2) (funcs 3))
+  (export (exports 2) (exports 3))
+  (import (from lodox-html-writer (escape-html 1)))
   (import (rename erlang
-            ((atom_to_list 1)    atom->string)
+            ((atom_to_list    1) atom->string)
             ((integer_to_list 1) int->string))))
 
-(defun funcs (modules partial-func)
-  "Find the best-matching `def{un,macro}`.
+(defun exports (modules partial-name)
+  "Find the best-matching function or macro.
 
-  Given a list of modules and a partial `def{un,macro}` string,
+  Given a list of modules and a partial export name,
   return the first matching definition.
   If none is found, return `` 'undefined ``.
 
-  Equivalent to [[funcs/3]] with `` 'undefined `` as `starting-mod`."
-  (funcs modules partial-func 'undefined))
+  Equivalent to `(`[[exports/3]] `modules partial-name 'undefined)`."
+  (exports modules partial-name 'undefined))
 
-(defun funcs (modules partial-func starting-mod)
-  "Like [[funcs/2]], but give precedence to matches in `starting-mod`."
-  (let* ((suffix   (if (lists:member #\: partial-func)
-                     partial-func
-                     (cons #\: partial-func)))
+(defun exports (modules partial-name starting-mod)
+  "Like [[exports/2]], but give precedence to matches in `starting-mod`."
+  (let* ((suffix   (clj:cond->> partial-name
+                     (lists:member #\: partial-name) (cons #\:)))
          (matches  (lists:filter
-                     (lambda (func-name) (lists:suffix suffix func-name))
-                     (exported-funcs modules)))
+                     (lambda (export-name)
+                       (lists:suffix suffix (escape-html export-name)))
+                     (exports modules)))
          (external (lists:dropwhile
-                     (lambda (func-name)
-                       (=/= (atom->string starting-mod) (module func-name)))
+                     (lambda (export-name)
+                       (=/= (atom->string starting-mod) (module export-name)))
                      matches)))
     (cond
      ((not (clj:nil? external)) (car external))
@@ -37,16 +38,17 @@
 ;;; Internal functions
 ;;;===================================================================
 
-(defun exported-funcs (modules)
-  (lc ((<- mod modules) (<- func (get mod 'exports)))
-    (func-name mod func)))
+(defun exports (modules)
+  (lc ((<- mod modules) (<- export (get mod 'exports)))
+    (export-name mod export)))
 
-(defun func-name (mod func)
-  (++ (atom->string (get mod 'name))
-      ":" (atom->string (get func 'name))
-      "/" (int->string (get func 'arity))))
+(defun export-name (mod export)
+  (let ((arity (get export 'arity)))
+    (clj:cond-> (++ (atom->string (get mod 'name)) ":"
+                    (atom->string (get export 'name)))
+      (clj:undefined? arity) (++ "/" (int->string arity)))))
 
-(defun module (func-name)
-  (lists:takewhile (lambda (c) (=/= c #\:)) func-name))
+(defun module (export-name)
+  (lists:takewhile (lambda (c) (=/= c #\:)) export-name))
 
 (defun get (plist key) (proplists:get_value key plist))

@@ -1,9 +1,12 @@
 (defmodule lodox-html-writer
   "Documentation writer that outputs HTML."
   (export (write-docs 1))
-  (import (from levaindoc (markdown_github->html 1 ))))
+  (export (escape-html 1))
+  (import (rename levaindoc ((markdown_github->html 1) gfm->html)))
+  (import (rename erlang
+            ((atom_to_list    1) atom->string)
+            ((integer_to_list 1) int->string))))
 
-(include-lib "clj/include/compose.lfe")
 (include-lib "exemplar/include/html-macros.lfe")
 
 (defun write-docs (app)
@@ -34,9 +37,9 @@
 
 (defun func-id (func)
   (if (clj-p:string? func)
-    (-> (http_uri:encode (h func))
-        (re:replace "%" "." '[global #(return list)])
-        (->> (++ "func-")))
+    (clj:-> (http_uri:encode func)
+            (re:replace "%" "." '[global #(return list)])
+            (clj:->> (++ "func-")))
     (func-id (func-name func))))
 
 (defun format-docstring (app def) (format-docstring app 'undefined def))
@@ -70,34 +73,35 @@
   [erlmarkdown]: https://github.com/erlware/erlmarkdown"
   (case (os:find_executable "pandoc")
     ('false (exit "Pandoc is required."))
-    (pandoc (let ((`#(ok ,html) (markdown_github->html markdown))) html))))
+    (pandoc (let ((`#(ok ,html) (gfm->html markdown))) html))))
 
 (defun format-wikilinks (app html init)
-  (case (re:run html "\\[\\[([^\\[]+/\\d+)\\]\\]"
+  (case (re:run html "\\[\\[([^\\[]+(/\\d+)?)\\]\\]"
                 '[global #(capture all_but_first)])
     ('nomatch html)
     (`#(match ,matches)
      (let ((to-search (++ (proplists:get_value 'modules app)
                           (proplists:get_value 'libs    app))))
-       (-> (match-lambda
-             ([`#(,start ,length)]
-              (let* ((match (lists:sublist html (+ 1 start) length))
-                     (mfa   (lodox-search:funcs to-search match init)))
-                (iff (=/= mfa 'undefined)
-                  (let ((`#(,mod [,_ . ,fname])
-                         (lists:splitwith (lambda (c) (=/= c #\:)) mfa)))
-                    `#(true #(,(re-escape (++ "[[" match "]]"))
-                              ,(link-to (func-uri mod fname)
-                                 (if (=:= (atom_to_list init) mod)
-                                   (h fname)
-                                   (h (++ mod ":" fname)))))))))))
-           (lists:filtermap (lists:flatten matches))
-           (->> (fold-replace html)))))))
+       (clj:->> (lists:flatten matches)
+                (lists:filtermap (do-format-wikilinks html init to-search))
+                (fold-replace html))))))
+
+(defun do-format-wikilinks (html init to-search)
+  (match-lambda
+    ([`#(,start ,length)]
+     (let* ((match  (lists:sublist html (+ 1 start) length))
+            (export (lodox-search:exports to-search match init)))
+       (clj:if-not (=:= 'undefined export)
+         (let ((`#(,mod [,_ . ,fname])
+                (lists:splitwith (lambda (c) (=/= c #\:)) export)))
+           `#(true #(,(re-escape (++ "[[" match "]]"))
+                     ,(link-to (func-uri mod fname)
+                        (clj:cond->> fname
+                          (=/= (atom->string init) mod) (++ mod ":")))))))))))
 
 (defun index-by (k plists)
-  (lists:foldl
-    (lambda (p pp) (-> (proplists:get_value k p) (tuple p) (cons pp)))
-    [] plists))
+  (clj:-> (lambda (p pp) (clj:-> (proplists:get_value k p) (tuple p) (cons pp)))
+          (lists:foldl [] plists)))
 
 (defun mod-filename (mod)
   (if (clj-p:string? mod)
@@ -107,7 +111,7 @@
 (defun mod-filepath (output-dir module)
   (filename:join output-dir (mod-filename module)))
 
-(defun mod-name (mod) (atom_to_list (proplists:get_value 'name mod)))
+(defun mod-name (mod) (atom->string (proplists:get_value 'name mod)))
 
 (defun doc-filename (doc)
   (++ (proplists:get_value 'name doc) ".html"))
@@ -147,7 +151,7 @@
    (flet ((menu-item
            ([`#(,name ,mod)]
             (let ((class (++ "depth-1" (if (=:= mod current) " current" "")))
-                  (inner (div '[class "inner"] (h (atom_to_list name)))))
+                  (inner (div '[class "inner"] (h (atom->string name)))))
               (li `[class ,class] (link-to (mod-filename mod) inner))))))
      (list (h3 '[class "no-link"] (span '[class "inner"] heading))
            (ul (lists:map #'menu-item/1 (index-by 'name plists)))))))
@@ -161,10 +165,10 @@
       ,(modules-menu app current)]))
 
 (defun sorted-exported-funcs (module)
-  (-> (lambda (a b)
-        (=< (string:to_lower (func-name a))
-            (string:to_lower (func-name b))))
-      (lists:sort (proplists:get_value 'exports module))))
+  (clj:-> (lambda (a b)
+            (=< (string:to_lower (func-name a))
+                (string:to_lower (func-name b))))
+          (lists:sort (proplists:get_value 'exports module))))
 
 (defun funcs-sidebar (module)
   (div '[class "sidebar secondary"]
@@ -200,11 +204,11 @@
       ,(h1 (link-to "index.html"
              `[,(project-title app) " "
                ,(span '[class "project-documented"]
-                  (->> (proplists:get_value 'documented app)
-                       (proplists:get_value 'percentage)
-                       (round)
-                       (list)
-                       (io_lib:format "(~w% documented)")))]))]))
+                  (clj:->> (proplists:get_value 'documented app)
+                           (proplists:get_value 'percentage)
+                           (round)
+                           (list)
+                           (io_lib:format "(~w% documented)")))]))]))
 
 (defun index-page (app)
   (html
@@ -297,7 +301,7 @@
 (defun mod-behaviour (mod)
   (lists:map
     (lambda (behaviour)
-      (h4 '[class "behaviour"] (atom_to_list behaviour)))
+      (h4 '[class "behaviour"] (atom->string behaviour)))
     (proplists:get_value 'behaviour mod)))
 
 (defun func-docs (app module func)
@@ -307,11 +311,11 @@
          ('["()"] [])
          (usages
           (div '[class "usage"]
-            (-> `["```commonlisp"
-                  ,@(lists:map #'unicode:characters_to_list/1 usages)
-                  "```"]
-                (string:join "\n")
-                (markdown->html)))))
+            (clj:-> `["```commonlisp"
+                      ,@(lists:map #'unicode:characters_to_list/1 usages)
+                      "```"]
+                    (string:join "\n")
+                    (markdown->html)))))
       ,(div '[class "doc"]
          (format-docstring app module func))
       ;; TODO: members?
@@ -385,8 +389,8 @@ If something goes wrong, throw a descriptive error."
 
 (defun write-modules (output-dir app)
   (flet ((write-module (module)
-           (-> (mod-filepath output-dir module)
-               (file:write_file (module-page app module)))))
+           (clj:-> (mod-filepath output-dir module)
+                   (file:write_file (module-page app module)))))
     (lists:foreach #'write-module/1 (proplists:get_value 'modules app))))
 
 (defun write-libs (output-dir app)
@@ -401,26 +405,27 @@ If something goes wrong, throw a descriptive error."
         (collect      (match-lambda
                         ([`#(,_mod []) acc] acc)
                         ([`#(,mod ,exports) acc]
-                         (-> (cons (car exports)
-                                   (lc ((<- export (cdr exports)))
-                                     (list #"\n" export)))
-                             (->> (list mod) (io_lib:format "== ~s ==~n~s~n"))
+                         (clj:-> (cons (car exports)
+                                       (lc ((<- export (cdr exports)))
+                                         (list #"\n" export)))
+                                 (clj:->> (list mod) (io_lib:format "== ~s ==~n~s~n"))
                              (cons acc))))))
     (case (lists:foldl collect "" undocumented)
       (""    (if (filelib:is_file output-file) (file:delete output-file) 'ok))
-      (lines (->> (string:join lines "\n") (file:write_file output-file))))))
+      (lines (clj:->> (string:join lines "\n") (file:write_file output-file))))))
 
 #|
 (defun write-documents (output-dir app)
   (flet ((write-document (document)
-           (-> (doc-filepath output-dir document)
-               (file:write_file (document-page app document)))))
+           (clj:-> (doc-filepath output-dir document)
+                   (file:write_file (document-page app document)))))
     (lists:foreach #'write-document/1 (proplists:get_value 'documents app))))
 |#
 
 (defun func-name (func)
-  (->> (integer_to_list (proplists:get_value 'arity func))
-       (++ (h (proplists:get_value 'name func)) "/")))
+  (let ((arity (proplists:get_value 'arity func)))
+    (clj:cond-> (atom->string (proplists:get_value 'name func))
+      (clj:undefined? arity) (++ "/" (int->string arity)))))
 
 (defun h (text)
   "Convenient alias for escape-html/1."
@@ -429,12 +434,12 @@ If something goes wrong, throw a descriptive error."
 (defun escape-html
   "Change special characters into HTML character entities."
   ([x] (when (is_atom x))
-   (escape-html (atom_to_list x)))
+   (escape-html (atom->string x)))
   ([text]
    (fold-replace text
      '[#("\\&"  "\\&amp;")
        #("<"  "\\&lt;")
-       ;; #(">"  "\\&gt;")
+       #(">"  "\\&gt;")
        #("\"" "\\&quot;")
        #("'"  "\\&apos;")])))
 
@@ -446,10 +451,10 @@ If something goes wrong, throw a descriptive error."
 |#
 
 (defun fold-replace (string pairs)
-  (-> (match-lambda
-        ([`#(,patt ,replacement) acc]
-         (re:replace acc patt replacement '[global #(return list)])))
-      (lists:foldl string pairs)))
+  (clj:-> (match-lambda
+            ([`#(,patt ,replacement) acc]
+             (re:replace acc patt replacement '[global #(return list)])))
+          (lists:foldl string pairs)))
 
 ;; Stolen from Elixir
 ;; https://github.com/elixir-lang/elixir/blob/944990381f6cadbaf751f2443d485684ba35b6d8/lib/elixir/lib/regex.ex#L601-L619
