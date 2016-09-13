@@ -19,7 +19,7 @@
 (defun exports (modules partial-name starting-mod)
   "Like [[exports/2]], but give precedence to matches in `starting-mod`."
   (let* ((suffix   (clj:cond->> partial-name
-                     (lists:member #\: partial-name) (cons #\:)))
+                     (not (lists:member #\: partial-name)) (cons #\:)))
          (matches  (lists:filter
                      (lambda (export-name)
                        (lists:suffix suffix (escape-html export-name)))
@@ -46,7 +46,7 @@
   (let ((arity (get export 'arity)))
     (clj:cond-> (++ (atom->string (get mod 'name)) ":"
                     (atom->string (get export 'name)))
-      (clj:undefined? arity) (++ "/" (int->string arity)))))
+      (not (clj:undefined? arity)) (++ "/" (int->string arity)))))
 
 (defun module (export-name)
   (lists:takewhile (lambda (c) (=/= c #\:)) export-name))

@@ -35,18 +35,18 @@
 ```"
   (a `[href ,uri] content))
 
-(defun func-id (func)
-  (if (clj-p:string? func)
-    (clj:-> (http_uri:encode func)
+(defun export-id (export)
+  (if (clj-p:string? export)
+    (clj:-> (http_uri:encode export)
             (re:replace "%" "." '[global #(return list)])
-            (clj:->> (++ "func-")))
-    (func-id (func-name func))))
+            (clj:->> (++ "export-")))
+    (export-id (export-name export))))
 
 (defun format-docstring (app def) (format-docstring app 'undefined def))
 
-(defun format-docstring (app module func)
+(defun format-docstring (app module export)
   ;; TODO: make format configurable
-  (format-docstring app module func 'markdown))
+  (format-docstring app module export 'markdown))
 
 (defun format-docstring (app mod def format)
   ;; TODO: ensure binary
@@ -95,7 +95,7 @@
          (let ((`#(,mod [,_ . ,fname])
                 (lists:splitwith (lambda (c) (=/= c #\:)) export)))
            `#(true #(,(re-escape (++ "[[" match "]]"))
-                     ,(link-to (func-uri mod fname)
+                     ,(link-to (export-uri mod fname)
                         (clj:cond->> fname
                           (=/= (atom->string init) mod) (++ mod ":")))))))))))
 
@@ -119,14 +119,14 @@
 (defun doc-filepath (output-dir doc)
   (filename:join output-dir (doc-filename doc)))
 
-(defun func-uri (module func)
-  (++ (mod-filename module) "#" (func-id func)))
+(defun export-uri (module export)
+  (++ (mod-filename module) "#" (export-id export)))
 
-(defun func-source-uri (source-uri app module func)
+(defun export-source-uri (source-uri app module export)
   (let* ((offset    (+ 1 (length (proplists:get_value 'app-dir app))))
          (filepath* (proplists:get_value 'filepath module))
          (filepath  (binary:part filepath* offset (- (size filepath*) offset)))
-         (line      (integer_to_binary (proplists:get_value 'line func)))
+         (line      (integer_to_binary (proplists:get_value 'line export)))
          (version   (proplists:get_value 'version app)))
     (fold-replace source-uri
       `[#("{filepath}"  ,filepath)
@@ -164,23 +164,23 @@
       ,(includes-menu app current)
       ,(modules-menu app current)]))
 
-(defun sorted-exported-funcs (module)
+(defun sorted-exports (module)
   (clj:-> (lambda (a b)
-            (=< (string:to_lower (func-name a))
-                (string:to_lower (func-name b))))
+            (=< (string:to_lower (export-name a))
+                (string:to_lower (export-name b))))
           (lists:sort (proplists:get_value 'exports module))))
 
-(defun funcs-sidebar (module)
+(defun exports-sidebar (module)
   (div '[class "sidebar secondary"]
     `[,(h3 (link-to "#top" (span '[class "inner"] "Exports")))
       ,(ul
          (lists:map
-           (lambda (func)
+           (lambda (export)
              (li '[class "depth-1"]
-                 (link-to (func-uri module func)
+                 (link-to (export-uri module export)
                    (div '[class "inner"]
-                     (span (h (func-name func))))))) ; TODO: members?
-           (sorted-exported-funcs module)))]))
+                     (span (h (export-name export))))))) ; TODO: members?
+           (sorted-exports module)))]))
 
 (defun default-includes ()
   `[,(meta '[charset "UTF-8"])
@@ -239,12 +239,12 @@
                                   `[,(p "Definitions")
                                     ,(unordered-list
                                       (lists:map
-                                        (lambda (func)
+                                        (lambda (export)
                                           `[" "
-                                            ,(link-to (func-uri lib func)
-                                               (func-name func))
+                                            ,(link-to (export-uri lib export)
+                                               (export-name export))
                                             " "])
-                                        (sorted-exported-funcs lib)))])]))
+                                        (sorted-exports lib)))])]))
                          libs)]))
                 ,(h2 "Modules")
                 ,(lists:map
@@ -260,12 +260,12 @@
                             `[,(p "Exports")
                               ,(unordered-list
                                 (lists:map
-                                  (lambda (func)
+                                  (lambda (export)
                                     `[" "
-                                      ,(link-to (func-uri module func)
-                                         (func-name func))
+                                      ,(link-to (export-uri module export)
+                                         (export-name export))
                                       " "])
-                                  (sorted-exported-funcs module)))])]))
+                                  (sorted-exports module)))])]))
                    (lists:sort
                      (lambda (a b) (=< (mod-name a) (mod-name b)))
                      (proplists:get_value 'modules app)))])])]))
@@ -291,12 +291,12 @@
            (div '[id "doc"] (format-document app doc)))])))
 |#
 
-(defun func-usage (func)
+(defun export-usage (export)
   (lists:map
     (lambda (pattern)
       (re:replace (lfe_io_pretty:term pattern) "comma " ". ,"
                   '[global #(return list)]))
-    (proplists:get_value 'patterns func)))
+    (proplists:get_value 'patterns export)))
 
 (defun mod-behaviour (mod)
   (lists:map
@@ -304,10 +304,10 @@
       (h4 '[class "behaviour"] (atom->string behaviour)))
     (proplists:get_value 'behaviour mod)))
 
-(defun func-docs (app module func)
-  (div `[class "public anchor" id ,(h (func-id func))]
-    `[,(h3 (h (func-name func)))
-      ,(case (func-usage func)
+(defun export-docs (app module export)
+  (div `[class "public anchor" id ,(h (export-id export))]
+    `[,(h3 (h (export-name export)))
+      ,(case (export-usage export)
          ('["()"] [])
          (usages
           (div '[class "usage"]
@@ -317,13 +317,13 @@
                     (string:join "\n")
                     (markdown->html)))))
       ,(div '[class "doc"]
-         (format-docstring app module func))
+         (format-docstring app module export))
       ;; TODO: members?
       ,(case (proplists:get_value 'source-uri app)
          ('undefined [])                ; Log failure to generate link?
          (source-uri
           (div '[class "src-link"]
-            (link-to (func-source-uri source-uri app module func)
+            (link-to (export-source-uri source-uri app module export)
               "view source"))))]))
 
 (defun module-page (app module)
@@ -334,13 +334,13 @@
       ,(body
          `[,(header* app)
            ,(primary-sidebar app module)
-           ,(funcs-sidebar module)
+           ,(exports-sidebar module)
            ,(div '[id "content" class "module-docs"]
               `[,(h1 '[id "top" class "anchor"] (h (mod-name module)))
                 ,(mod-behaviour module)
                 ,(div '[class "doc"] (format-docstring app [] module))
-                ,(lists:map (lambda (func) (func-docs app module func))
-                   (sorted-exported-funcs module))])])]))
+                ,(lists:map (lambda (export) (export-docs app module export))
+                   (sorted-exports module))])])]))
 
 (defun lib-page (app lib)
   (html
@@ -351,12 +351,12 @@
       ,(body
          `[,(header* app)
            ,(primary-sidebar app lib)
-           ,(funcs-sidebar lib)
+           ,(exports-sidebar lib)
            ,(div '[id "content" class "module-docs"] ; TODO: confirm this
               (list (h1 '[id "top" class "anchor"]
                         (h (proplists:get_value 'name lib)))
-                    (lists:map (lambda (func) (func-docs app lib func))
-                      (sorted-exported-funcs lib))))])]))
+                    (lists:map (lambda (export) (export-docs app lib export))
+                      (sorted-exports lib))))])]))
 
 (defun copy-resource (output-dir resource)
   (let* ((this  (proplists:get_value 'source (module_info 'compile)))
@@ -422,10 +422,10 @@ If something goes wrong, throw a descriptive error."
     (lists:foreach #'write-document/1 (proplists:get_value 'documents app))))
 |#
 
-(defun func-name (func)
-  (let ((arity (proplists:get_value 'arity func)))
-    (clj:cond-> (atom->string (proplists:get_value 'name func))
-      (clj:undefined? arity) (++ "/" (int->string arity)))))
+(defun export-name (export)
+  (let ((arity (proplists:get_value 'arity export)))
+    (clj:cond-> (atom->string (proplists:get_value 'name export))
+      (not (clj:undefined? arity)) (++ "/" (int->string arity)))))
 
 (defun h (text)
   "Convenient alias for escape-html/1."
