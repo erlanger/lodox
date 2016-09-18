@@ -1,5 +1,7 @@
+;;; ============================================================== [ lodox.lfe ]
+
 (defmodule lodox
-  "The Lodox [Rebar3][1] [provider][2].
+  "The Lodox [`rebar3`][1] [provider][2].
 
   [1]: http://www.rebar3.org/docs/plugins
   [2]: https://github.com/tsloughter/providers"
@@ -27,10 +29,7 @@
   "The description for the task, used by `rebar3 help`."
   (short-desc))
 
-
-;;;===================================================================
-;;; API
-;;;===================================================================
+;;; ==================================================================== [ API ]
 
 (defun init (state)
   "Initiate the Lodox provider."
@@ -44,7 +43,7 @@
                  #(short_desc ,(short-desc))      ; A one-line description
                  #(desc       ,(desc))            ; A longer description
                  #(bare       true)               ; Task can be run by user
-                 #(profiles   [doc])])
+                 #(profiles   [docs])])
          (provider (providers:create opts)))
     (let ((state* (rebar_state:add_provider state provider)))
       (rebar_api:debug "Initialized lodox" [])
@@ -65,10 +64,7 @@
   so a string can be formatted explaining the issue."
   (io_lib:format "~p" `[,reason]))
 
-
-;;;===================================================================
-;;; Internal functions
-;;;===================================================================
+;;; ===================================================== [ Internal functions ]
 
 (defun write-docs (app-info)
   "Given an [app_info_t], call [[lodox-html-writer:write-docs/1]] appropriately.
@@ -78,16 +74,15 @@
           (lists:map (lambda (f) (call 'rebar_app_info f app-info))
             '[opts dir name original_vsn out_dir]))
          (lodox-opts       (get-lodox-opts name opts))
-         (excluded-modules (proplists:get_value 'excluded-modules lodox-opts []))
          (ebin-dir         (filename:join out-dir "ebin"))
-         (doc-dir          (filename:join app-dir "doc")))
+         (doc-dir          (filename:join app-dir "docs")))
     (rebar_api:debug "Adding ~p to the code path" `[,ebin-dir])
     (code:add_patha ebin-dir)
-    (let ((app (++ (lodox-parse:docs name excluded-modules)
+    (let ((app (++ (lodox-parse:docs name lodox-opts)
                    (cons `#(app-dir ,app-dir)
                          (maybe-default 'output-path doc-dir lodox-opts)))))
-      (rebar_api:debug "Generating docs for ~p with excluded modules: ~p"
-        `[,(proplists:get_value 'name app) ,excluded-modules])
+      (rebar_api:debug "Generating docs for ~s with opts: ~p"
+        `[,name ,lodox-opts])
       (lodox-html-writer:write-docs app)
       (rebar_api:console "Generated ~s v~s docs in ~s"
         `[,name ,vsn ,(proplists:get_value 'output-path app)]))))
@@ -107,3 +102,5 @@
 (defun maybe-default (key value opts)
   "Prepend `` `#(,key ,value) `` to `opts` iff `key` is not already defined."
   (if (proplists:is_defined key opts) opts (cons `#(,key ,value) opts)))
+
+;;; ==================================================================== [ EOF ]
