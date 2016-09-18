@@ -3,10 +3,12 @@
 (defmodule lodox-search
   "Doc-searching functions."
   (export (exports 2) (exports 3))
-  (import (from lodox-html-writer (escape-html 1)))
-  (import (rename erlang
+  (import (from lodox-html-writer (escape-html 1))
+          (rename erlang
             ((atom_to_list    1) atom->string)
             ((integer_to_list 1) int->string))))
+
+(include-lib "lfe/include/clj.lfe")
 
 ;;; ==================================================================== [ API ]
 
@@ -22,7 +24,7 @@
 
 (defun exports (modules partial-name starting-mod)
   "Like [[exports/2]], but give precedence to matches in `starting-mod`."
-  (let* ((suffix   (clj:cond->> partial-name
+  (let* ((suffix   (cond->> partial-name
                      (not (lists:member #\: partial-name)) (cons #\:)))
          (matches  (lists:filter
                      (lambda (export-name)
@@ -33,8 +35,8 @@
                        (=/= (atom->string starting-mod) (module export-name)))
                      matches)))
     (cond
-     ((not (clj:nil? external)) (car external))
-     ((clj:nil? matches)        'undefined)
+     ((not (nil? external)) (car external))
+     ((nil? matches)        'undefined)
      ('true                     (car matches)))))
 
 ;;; ===================================================== [ Internal functions ]
@@ -45,9 +47,9 @@
 
 (defun export-name (mod export)
   (let ((arity (get export 'arity)))
-    (clj:cond-> (++ (atom->string (get mod 'name)) ":"
-                    (atom->string (get export 'name)))
-      (not (clj:undefined? arity)) (++ "/" (int->string arity)))))
+    (cond-> (++ (atom->string (get mod 'name)) ":"
+                (atom->string (get export 'name)))
+      (not (undefined? arity)) (++ "/" (int->string arity)))))
 
 (defun module (export-name)
   (lists:takewhile (lambda (c) (=/= c #\:)) export-name))

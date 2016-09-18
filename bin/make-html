@@ -5,7 +5,8 @@
 
 (io:format "\e[32m===> Generating HTML documentation for lodox...\e[0m\n")
 
-(->> (lodox-parse:docs #"lodox" '[lodox-search])
+(->> '[#(excluded-modules [lodox-search unit-lodox-tests])]
+     (lodox-parse:docs #"lodox")
      (list* `#(app-dir    ,(let ((`#(ok ,cwd) (file:get_cwd))) cwd))
             `#(source-uri ,(++ "https://github.com/lfe-rebar3/lodox"
                                "/blob/{version}/{filepath}#L{line}")))

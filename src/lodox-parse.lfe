@@ -2,7 +2,7 @@
 
 (defmodule lodox-parse
   "Parsing LFE source files for metadata."
-  (export (docs 1) (docs 2) (documented 1) (mod-doc 1))
+  (export (docs 1) (docs 2) (documented 1))
   (import (from clj (comp 3)))
   (import (rename erlang ((list_to_float 1) list->float))))
 
@@ -12,11 +12,12 @@
 
 (defun docs (app-name)
   "Equivalent to [[docs/2]] with the empty list as `excluded-modules`."
-  (docs app-name []))
+  ;; FIXME: define defaults/0
+  (docs app-name '[#(excluded-modules [])]))
 
 ;; TODO: write a better docstring
 ;; TODO: document excluded-modules
-(defun docs (app-name excluded-modules)
+(defun docs (app-name opts)
   "Given an app-name (binary), return a proplist like:
 
   ```commonlisp
@@ -33,6 +34,7 @@
                         info))
          (version     (proplists:get_value 'vsn app-info ""))
          (description (proplists:get_value 'description app-info ""))
+         (excluded-modules (proplists:get_value 'excluded-modules opts []))
          (modules     (-> (proplists:get_value 'modules app-info)
                           (->> (filter-excluded excluded-modules))
                           (mod-docs)))
@@ -68,6 +70,8 @@
          (lists:foldl #'documented/2 #(#(0 0) []))
          (percentage))))
 
+;;; ===================================================== [ Internal functions ]
+
 (defun documented
   ([mod-doc `#(,tally ,modules)]
    (let ((`#(,tally* ,undocumented)
@@ -84,8 +88,6 @@
      `#(#(,(+ n 1) ,(+ d 1)) ,undocumented))))
 
 (defun undocumented? (export) (=:= #"" (proplists:get_value 'doc export #"")))
-
-;;; ===================================================== [ Internal functions ]
 
 (defun mod-behaviour (module)
   (let ((attributes (call module 'module_info 'attributes)))

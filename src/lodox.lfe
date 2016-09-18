@@ -1,7 +1,7 @@
 ;;; ============================================================== [ lodox.lfe ]
 
 (defmodule lodox
-  "The Lodox [Rebar3][1] [provider][2].
+  "The Lodox [`rebar3`][1] [provider][2].
 
   [1]: http://www.rebar3.org/docs/plugins
   [2]: https://github.com/tsloughter/providers"
@@ -74,16 +74,15 @@
           (lists:map (lambda (f) (call 'rebar_app_info f app-info))
             '[opts dir name original_vsn out_dir]))
          (lodox-opts       (get-lodox-opts name opts))
-         (excluded-modules (proplists:get_value 'excluded-modules lodox-opts []))
          (ebin-dir         (filename:join out-dir "ebin"))
          (doc-dir          (filename:join app-dir "docs")))
     (rebar_api:debug "Adding ~p to the code path" `[,ebin-dir])
     (code:add_patha ebin-dir)
-    (let ((app (++ (lodox-parse:docs name excluded-modules)
+    (let ((app (++ (lodox-parse:docs name lodox-opts)
                    (cons `#(app-dir ,app-dir)
                          (maybe-default 'output-path doc-dir lodox-opts)))))
-      (rebar_api:debug "Generating docs for ~p with excluded modules: ~p"
-        `[,(proplists:get_value 'name app) ,excluded-modules])
+      (rebar_api:debug "Generating docs for ~s with opts: ~p"
+        `[,name ,lodox-opts])
       (lodox-html-writer:write-docs app)
       (rebar_api:console "Generated ~s v~s docs in ~s"
         `[,name ,vsn ,(proplists:get_value 'output-path app)]))))

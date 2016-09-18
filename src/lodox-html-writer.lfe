@@ -96,27 +96,25 @@
 
 (defun format-wikilinks (app html init)
   (case (re:run html "\\[\\[([^\\[]+(/\\d+)?)\\]\\]"
-                '[global #(capture all_but_first)])
+                '[global #(capture all_but_first list)])
     ('nomatch html)
     (`#(match ,matches)
      (let ((to-search (++ (proplists:get_value 'modules app)
                           (proplists:get_value 'libs    app))))
-       (->> (lists:flatten matches)
+       (->> matches
             (lists:filtermap (do-format-wikilinks html init to-search))
             (fold-replace html))))))
 
 (defun do-format-wikilinks (html init to-search)
-  (match-lambda
-    ([`#(,start ,length)]
-     (let* ((match  (lists:sublist html (+ 1 start) length))
-            (export (lodox-search:exports to-search match init)))
-       (if-not (=:= 'undefined export)
-         (let ((`#(,mod [,_ . ,fname])
-                (lists:splitwith (lambda (c) (=/= c #\:)) export)))
-           `#(true #(,(re-escape (++ "[[" match "]]"))
-                     ,(link-to (export-uri mod fname)
-                        (cond->> fname
-                          (=/= (atom->string init) mod) (++ mod ":")))))))))))
+  (lambda (match)
+    (let ((export (lodox-search:exports to-search match init)))
+      (if-not (=:= 'undefined export)
+        (let ((`#(,mod [,_ . ,fname])
+               (lists:splitwith (lambda (c) (=/= c #\:)) export)))
+          `#(true #(,(re-escape (++ "[[" match "]]"))
+                    ,(link-to (export-uri mod fname)
+                       (cond->> fname
+                         (=/= (atom->string init) mod) (++ mod ":"))))))))))
 
 (defun index-by (k plists)
   (-> (lambda (p pp) (-> (proplists:get_value k p) (tuple p) (cons pp)))
@@ -155,8 +153,8 @@
 (defun index-link (_app on-index?)
   `[,(h3 '[class "no-link"] (span '[class "inner"] "Application"))
     ,(ul '[class "index-link"]
-         (li `[class ,(++ "depth-1" (if on-index? " current" ""))]
-             (link-to "index.html" (div '[class "inner"] "Index"))))])
+       (li `[class ,(++ "depth-1" (if on-index? " current" ""))]
+           (link-to "index.html" (div '[class "inner"] "Index"))))])
 
 (defun includes-menu (app current-lib)
   (make-menu "Includes" (proplists:get_value 'libs app) current-lib))
@@ -231,63 +229,74 @@
 
 (defun index-page (app)
   (html
-    `[,(head
-         `[,(default-includes)
-           ,(title (++ (h (proplists:get_value 'name app)) " "
-                       (h (proplists:get_value 'version app))))])
-      ,(body
-         `[,(header* app)
-           ,(primary-sidebar app)
-           ,(div '[id "content" class "module-index"]
-              `[,(h1 (project-title app))
-                ,(case (proplists:get_value 'description app)
-                   ("" "")
-                   (doc (div '[class "doc"] (p (h doc)))))
-                ,(case (lists:sort
-                         (lambda (a b) (=< (mod-name a) (mod-name b)))
-                         (proplists:get_value 'libs app))
-                   ([] "")
-                   (libs
-                    `[,(h2 "Includes")
-                      ,(lists:map
-                         (lambda (lib)
-                           (div '[class "module"]
-                             `[,(h3 (link-to (mod-filename lib)
-                                      (h (mod-name lib))))
-                               ,(div '[class "index"]
-                                  `[,(p "Definitions")
-                                    ,(unordered-list
-                                      (lists:map
-                                        (lambda (export)
-                                          `[" "
-                                            ,(link-to (export-uri lib export)
-                                               (export-name export))
-                                            " "])
-                                        (sorted-exports lib)))])]))
-                         libs)]))
-                ,(h2 "Modules")
-                ,(lists:map
-                   (lambda (module)
-                     (div '[class "module"]
-                       `[,(h3 (link-to (mod-filename module)
-                                (h (mod-name module))))
-                         ,(case (format-docstring app [] module)
-                            (""  "")
-                            ;; TODO: summarize
-                            (doc (div '[class "doc"] doc)))
-                         ,(div '[class "index"]
-                            `[,(p "Exports")
-                              ,(unordered-list
+    (list
+      (head
+        (list
+          (default-includes)
+          (title (++ (h (proplists:get_value 'name app)) " "
+                     (h (proplists:get_value 'version app))))))
+      (body
+        (list
+          (header* app)
+          (primary-sidebar app)
+          (div '[id "content" class "module-index"]
+            (list
+              (h1 (project-title app))
+              (case (proplists:get_value 'description app)
+                ("" "")
+                (description (div '[class "doc"] (p (h description)))))
+              (case (lists:sort
+                      (lambda (a b) (=< (mod-name a) (mod-name b)))
+                      (proplists:get_value 'libs app))
+                ([] "")
+                (libs
+                 (list
+                   (h2 "Includes")
+                   (lists:map
+                     (lambda (lib)
+                       (div '[class "module"]
+                         (list
+                           (h3 (link-to (mod-filename lib)
+                                 (h (mod-name lib))))
+                           (div '[class "index"]
+                             (list
+                               (p "Definitions")
+                               (unordered-list
                                 (lists:map
                                   (lambda (export)
-                                    `[" "
-                                      ,(link-to (export-uri module export)
-                                         (export-name export))
-                                      " "])
-                                  (sorted-exports module)))])]))
-                   (lists:sort
-                     (lambda (a b) (=< (mod-name a) (mod-name b)))
-                     (proplists:get_value 'modules app)))])])]))
+                                    (list
+                                      " "
+                                      (link-to (export-uri lib export)
+                                        (export-name export))
+                                      " "))
+                                  (sorted-exports lib))))))))
+                     libs))))
+              (h2 "Modules")
+              (lists:map
+                (lambda (module)
+                  (div '[class "module"]
+                    (list
+                      (h3 (link-to (mod-filename module)
+                            (h (mod-name module))))
+                      (case (format-docstring app [] module)
+                        (""  "")
+                        ;; TODO: summarize
+                        (doc (div '[class "doc"] doc)))
+                      (div '[class "index"]
+                        (list
+                          (p "Exports")
+                          (unordered-list
+                           (lists:map
+                             (lambda (export)
+                               (list
+                                 " "
+                                 (link-to (export-uri module export)
+                                   (export-name export))
+                                 " "))
+                             (sorted-exports module))))))))
+                (lists:sort
+                  (lambda (a b) (=< (mod-name a) (mod-name b)))
+                  (proplists:get_value 'modules app))))))))))
 
 ;; TODO: exemplar-ify this
 (defun unordered-list (lst) (ul (lists:map #'li/1 lst)))
@@ -407,16 +416,27 @@ for each `dir` in `dirs`."
                    (index-page app)))
 
 (defun write-modules (output-dir app)
-  (flet ((write-module (module)
-           (-> (mod-filepath output-dir module)
-               (file:write_file (module-page app module)))))
-    (lists:foreach #'write-module/1 (proplists:get_value 'modules app))))
+  (lists:foreach
+    (lambda (module)
+      (file:write_file (mod-filepath output-dir module)
+                       (module-page app module)))
+    (proplists:get_value 'modules app)))
+
+(defun write-documents (output-dir app)
+  (lists:foreach
+    (lambda (document)
+      ;; TODO
+      ;; (file:write_file (transform-html app (document-page app document)))
+      (file:write_file (doc-filepath output-dir document)
+                       (document-page app document)))
+    (proplists:get_value 'documents app [])))
 
 (defun write-libs (output-dir app)
-  (flet ((write-lib (lib)
-           (file:write_file (mod-filepath output-dir lib)
-                            (lib-page app lib))))
-    (lists:foreach #'write-lib/1 (proplists:get_value 'libs app))))
+  (lists:foreach
+    (lambda (lib)
+      (file:write_file (mod-filepath output-dir lib)
+                       (lib-page app lib)))
+    (proplists:get_value 'libs app)))
 
 (defun write-undocumented (output-dir app)
   (let ((undocumented (clj-seq:get-in app '[documented undocumented]))
@@ -432,14 +452,6 @@ for each `dir` in `dirs`."
     (case (lists:foldl collect "" undocumented)
       (""    (if (filelib:is_file output-file) (file:delete output-file) 'ok))
       (lines (->> (string:join lines "\n") (file:write_file output-file))))))
-
-#|
-(defun write-documents (output-dir app)
-  (flet ((write-document (document)
-           (-> (doc-filepath output-dir document)
-               (file:write_file (document-page app document)))))
-    (lists:foreach #'write-document/1 (proplists:get_value 'documents app))))
-|#
 
 (defun export-name (export)
   (let ((arity (proplists:get_value 'arity export)))
