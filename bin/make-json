@@ -1,5 +1,12 @@
 #!/usr/bin/env lfe
 ;; -*- lfe -*-
+
+(include-lib "lfe/include/clj.lfe")
+
 (io:format "\e[32m===> Generating JSON documentation for lodox...\e[0m\n")
-(lodox-json-writer:write-docs (lodox-parse:docs #"lodox"))
+
+(->> '[#(excluded-modules [lodox-search unit-lodox-tests])]
+     (lodox-parse:docs #"lodox")
+     (lodox-json-writer:write-docs))
+
 (io:format " ~~~~>    Generated ./docs/lodox.json\n")

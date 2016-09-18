@@ -4,7 +4,7 @@ all: compile
 
 compile: ; @rebar3 compile
 
-doc: html json
+docs: html json
 
 html: compile; @./bin/make-html
 

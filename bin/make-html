@@ -1,7 +1,7 @@
 #!/usr/bin/env lfe
 ;; -*- lfe -*-
 
-(include-file "_build/default/lib/clj/include/compose.lfe")
+(include-lib "lfe/include/clj.lfe")
 
 (io:format "\e[32m===> Generating HTML documentation for lodox...\e[0m\n")
 
