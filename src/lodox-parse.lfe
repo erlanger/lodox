@@ -34,6 +34,7 @@
                         info))
          (version     (proplists:get_value 'vsn app-info ""))
          (description (proplists:get_value 'description app-info ""))
+         (documents   (read-documents opts))
          (excluded-modules (proplists:get_value 'excluded-modules opts []))
          (modules     (-> (proplists:get_value 'modules app-info)
                           (->> (filter-excluded excluded-modules))
@@ -43,7 +44,7 @@
       #(version     ,(list_to_binary version))
       #(description ,(list_to_binary description))
       ;; TODO: parse includes as before
-      ;; TODO: documents
+      #(documents   ,documents)
       #(libs        [])
       #(modules     ,modules)
       #(documented  ,documented)]))
@@ -71,6 +72,44 @@
          (percentage))))
 
 ;;; ===================================================== [ Internal functions ]
+
+(defun read-documents (opts)
+  (case (proplists:get_value 'doc-files opts 'all)
+    ('all
+     (->> (proplists:get_value 'doc-paths opts '["priv/docs"])
+          (lists:flatmap (lambda (dir) (filelib:wildcard (filename:join dir "*"))))
+          (lists:filtermap #'read-file/1)
+          (lists:sort #'by-name/2)))
+    (doc-files
+     (lists:filtermap #'read-file/1 doc-files))))
+
+(defun read-file (file)
+  (case (file-type (filename:extension file))
+    ('undefined 'false)
+    (format
+     (let ((`#(ok ,content) (file:read_file file)))
+       `#(true [#(name    ,(basename file))
+                #(title   ,(find-title format content))
+                #(format  ,format)
+                #(content ,(binary_to_list content))])))))
+
+(defun file-type (ext)
+  (->> '[#(".md"       markdown)
+         #(".markdown" markdown)]
+       (proplists:get_value ext)))
+
+(defun basename (file) (filename:basename file (filename:extension file)))
+
+(defun by-name (a b)
+  (=< (proplists:get_value 'name a)
+      (proplists:get_value 'name b)))
+
+(defun find-title
+  (['markdown content]
+   (let ((`#(match [,title . ,_])
+          (re:run content "(?m)^\\s*#\\s*(.*)\\s*$"
+                  '[#(capture all_but_first list)])))
+     title)))
 
 (defun documented
   ([mod-doc `#(,tally ,modules)]

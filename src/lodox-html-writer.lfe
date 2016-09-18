@@ -25,6 +25,7 @@
     (copy-resource "js/page_effects.js")
     (write-index        app)
     (write-modules      app)
+    (write-documents    app)
     (write-libs         app)
     (write-undocumented app)))
 
@@ -85,11 +86,8 @@
           (format-wikilinks app html name)))))))
 
 (defun markdown->html (markdown)
-  "Given a Markdown string, convert it to HTML.
-  Use [pandoc] if available, otherwise [erlmarkdown].
-
-  [pandoc]: http://pandoc.org
-  [erlmarkdown]: https://github.com/erlware/erlmarkdown"
+  "Given a Markdown string, convert it to HTML, using [pandoc].
+    [pandoc]: http://pandoc.org"
   (case (os:find_executable "pandoc")
     ('false (exit "Pandoc is required."))
     (pandoc (let ((`#(ok ,html) (gfm->html markdown))) html))))
@@ -156,6 +154,20 @@
        (li `[class ,(++ "depth-1" (if on-index? " current" ""))]
            (link-to "index.html" (div '[class "inner"] "Index"))))])
 
+(defun topics-menu (app current-doc)
+  (case (proplists:get_value 'documents app [])
+    ([] [])
+    (docs
+     (list
+       (h3 '[class "no-link"] (span '[class "inner"] "Topics"))
+       (ul
+         (lc ((<- doc docs))
+           (li `[class ,(cond-> "depth-1"
+                          (=:= doc current-doc) (++ " current"))]
+               (link-to (doc-filename doc)
+                 (div '[class "inner"]
+                   (span (h (proplists:get_value 'title doc))))))))))))
+
 (defun includes-menu (app current-lib)
   (make-menu "Includes" (proplists:get_value 'libs app) current-lib))
 
@@ -178,6 +190,7 @@
 (defun primary-sidebar (app current)
   (div '[class "sidebar primary"]
     `[,(index-link app (=:= () current))
+      ,(topics-menu app current)
       ,(includes-menu app current)
       ,(modules-menu app current)]))
 
@@ -271,6 +284,15 @@
                                       " "))
                                   (sorted-exports lib))))))))
                      libs))))
+              (case (proplists:get_value 'documents app)
+                ([] "")
+                (docs
+                 (list
+                   (h2 "Topics")
+                   (ul '[class "topics"]
+                     (lc ((<- doc docs))
+                       (li (link-to (doc-filename doc)
+                             (h (proplists:get_value 'title doc)))))))))
               (h2 "Modules")
               (lists:map
                 (lambda (module)
@@ -301,23 +323,26 @@
 ;; TODO: exemplar-ify this
 (defun unordered-list (lst) (ul (lists:map #'li/1 lst)))
 
-#|
-(defun format-document
-  ([app (= doc `#m(format ,format))] (when (=:= format 'markdown))
-   ;; TODO: render markdown
-   `[div (class "markdown") ,(proplists:get_value 'content doc)]))
+(defun format-document (app doc)
+  (case (proplists:get_value 'format doc)
+    ('markdown
+     (div '[class "markdown"]
+       (let ((html (-> (proplists:get_value 'content doc)
+                       (unicode:characters_to_list)
+                       (markdown->html))))
+         ;; (format-wikilinks app html 'undefined)
+         html)))))
 
 (defun document-page (app doc)
   (html
-    (head
-      `[,(default-includes)
-        ,(title (h (proplists:get_value 'title doc)))])
-    (body
-      `[,(header* app)
-        ,(primary-sidebar app doc)
-        ,(div '[id "content" class "document"]
-           (div '[id "doc"] (format-document app doc)))])))
-|#
+    (list (head
+            (list (default-includes)
+                  (title (h (proplists:get_value 'title doc)))))
+          (body
+            (list (header* app)
+                  (primary-sidebar app doc)
+                  (div '[id "content" class "document"]
+                    (div '[class "doc"] (format-document app doc))))))))
 
 (defun export-usage (export)
   (lists:map
