@@ -1,11 +1,14 @@
+;;; ======================================================== [ lodox-parse.lfe ]
+
 (defmodule lodox-parse
   "Parsing LFE source files for metadata."
   (export (docs 1) (docs 2) (documented 1) (mod-doc 1))
+  (import (from clj (comp 3)))
   (import (rename erlang ((list_to_float 1) list->float))))
 
-;;;===================================================================
-;;; API
-;;;===================================================================
+(include-lib "lfe/include/clj.lfe")
+
+;;; ==================================================================== [ API ]
 
 (defun docs (app-name)
   "Equivalent to [[docs/2]] with the empty list as `excluded-modules`."
@@ -16,28 +19,29 @@
 (defun docs (app-name excluded-modules)
   "Given an app-name (binary), return a proplist like:
 
-```commonlisp
-[#(name        #\"lodox\")
- #(version     \"0.16.2\")
- #(description \"The LFE rebar3 Lodox plugin\")
- #(documents   [])
- #(modules     {{list of proplists of module metadata}})
- #(documented  {{ see documented/1 }})]
-```"
-  (let* ((app         (clj:doto (binary_to_atom app-name 'latin1)
+  ```commonlisp
+  [#(name        #\"lodox\")
+   #(version     \"0.16.2\")
+   #(description \"The LFE rebar3 Lodox plugin\")
+   #(documents   [])
+   #(modules     {{list of proplists of module metadata}})
+   #(documented  {{ see documented/1 }})]
+  ```"
+  (let* ((app         (doto (binary_to_atom app-name 'latin1)
                         (application:load)))
          (app-info    (let ((`#(ok ,info) (application:get_all_key app)))
                         info))
-         (modules     (clj:-> (proplists:get_value 'modules app-info)
-                              (clj:->> (filter-excluded excluded-modules))
-                                       (mod-docs)))
          (version     (proplists:get_value 'vsn app-info ""))
-         (documented  (documented modules))
-         (description (proplists:get_value 'description app-info "")))
+         (description (proplists:get_value 'description app-info ""))
+         (modules     (-> (proplists:get_value 'modules app-info)
+                          (->> (filter-excluded excluded-modules))
+                          (mod-docs)))
+         (documented  (documented modules)))
     `[#(name        ,app-name)
       #(version     ,(list_to_binary version))
       #(description ,(list_to_binary description))
       ;; TODO: parse includes as before
+      ;; TODO: documents
       #(libs        [])
       #(modules     ,modules)
       #(documented  ,documented)]))
@@ -46,32 +50,32 @@
   "Given a list of parsed modules, return a proplist representing
   undocumented functions therein.
 
-```commonlisp
-[#(percentage   {{float 0.0-100.0}}
- #(undocumented [#({{ module name (atom) }}
-                   [\"{{function/arity}}\" ...]),...]))]
-```"
+  ```commonlisp
+  [#(percentage   {{float 0.0-100.0}}
+   #(undocumented [#({{ module name (atom) }}
+                     [\"{{function/arity}}\" ...]),...]))]
+  ```"
   (flet ((percentage
           ([`#(#(,_ 0) ,modules)]
-          `[#(percentage 0) #(undocumented ,modules)])
+           `[#(percentage 0) #(undocumented ,modules)])
           ([`#(#(,n ,d) ,modules)]
-           (clj:->> `[,(* (/ n d) 100)]
-                    (io_lib:format "~.2f")
-                    (clj:comp #'list->float/1 #'car/1)
-                    (tuple 'percentage)
-                    (list `#(undocumented ,modules))))))
-    (clj:->> modules
-             (lists:foldl #'documented/2 #(#(0 0) []))
-             (percentage))))
+           (->> `[,(* (/ n d) 100)]
+                (io_lib:format "~.2f")
+                (comp #'list->float/1 #'car/1)
+                (tuple 'percentage)
+                (list `#(undocumented ,modules))))))
+    (->> modules
+         (lists:foldl #'documented/2 #(#(0 0) []))
+         (percentage))))
 
 (defun documented
   ([mod-doc `#(,tally ,modules)]
    (let ((`#(,tally* ,undocumented)
           (lists:foldl #'-documented/2 `#(,tally [])
             (proplists:get_value 'exports mod-doc))))
-     (clj:-> (tuple (proplists:get_value 'name mod-doc) undocumented)
-             (cons modules)
-             (clj:->> (tuple tally*))))))
+     (-> (tuple (proplists:get_value 'name mod-doc) undocumented)
+         (cons modules)
+         (->> (tuple tally*))))))
 
 (defun -documented
   ([export `#(#(,n ,d) ,undocumented)]
@@ -81,9 +85,7 @@
 
 (defun undocumented? (export) (=:= #"" (proplists:get_value 'doc export #"")))
 
-;;;===================================================================
-;;; Internal functions
-;;;===================================================================
+;;; ===================================================== [ Internal functions ]
 
 (defun mod-behaviour (module)
   (let ((attributes (call module 'module_info 'attributes)))
@@ -92,7 +94,7 @@
 (defun mod-docs
   ([mod] (when (is_atom mod))
    (let ((file (proplists:get_value 'source (call mod 'module_info 'compile))))
-     (clj:iff (=:= ".lfe" (filename:extension file))
+     (iff (=:= ".lfe" (filename:extension file))
        (case (mod-doc mod)
          (`#(,exports ,mod-doc)
           `#(true [#(name      ,(mod-name mod))
@@ -108,19 +110,19 @@
   (case (lfe_doc:get_module_docs mod)
     (`#(error ,_) 'false)
     (`#(ok ,chunk)
-     (clj:-> (lambda (doc)
-             (case (lfe_doc:mf_doc_type doc)
-               ('function
-                `#(true [#(name     ,(lfe_doc:function_name doc))
-                         #(arity    ,(lfe_doc:function_arity doc))
-                         #(patterns ,(patterns (lfe_doc:function_patterns doc)))
-                         #(doc      ,(flatten (lfe_doc:function_doc doc)))
-                         #(line     ,(lfe_doc:function_line doc))]))
-               ('macro
-                 `#(true [#(name     ,(lfe_doc:macro_name doc))
-                          #(patterns ,(patterns (lfe_doc:macro_patterns doc)))
-                          #(doc      ,(flatten (lfe_doc:macro_doc doc)))
-                          #(line     ,(lfe_doc:macro_line doc))]))))
+     (-> (lambda (doc)
+           (case (lfe_doc:mf_doc_type doc)
+             ('function
+              `#(true [#(name     ,(lfe_doc:function_name doc))
+                       #(arity    ,(lfe_doc:function_arity doc))
+                       #(patterns ,(patterns (lfe_doc:function_patterns doc)))
+                       #(doc      ,(flatten (lfe_doc:function_doc doc)))
+                       #(line     ,(lfe_doc:function_line doc))]))
+             ('macro
+               `#(true [#(name     ,(lfe_doc:macro_name doc))
+                        #(patterns ,(patterns (lfe_doc:macro_patterns doc)))
+                        #(doc      ,(flatten (lfe_doc:macro_doc doc)))
+                        #(line     ,(lfe_doc:macro_line doc))]))))
          (lists:filtermap (lfe_doc:mf_docs chunk))
          (tuple (flatten (lfe_doc:module_doc chunk)))))))
 
@@ -134,15 +136,17 @@
 
 (defun export-name (def)
   "Given a parsed def{un,macro} form (map), return a string, `\"name/arity\"`."
-  (clj:->> (lc ((<- k '[name arity])) (proplists:get_value k def))
-           (io_lib:format "~s/~w")
-           (iolist_to_binary)))
+  (->> (lc ((<- k '[name arity])) (proplists:get_value k def))
+       (io_lib:format "~s/~w")
+       (iolist_to_binary)))
 
 (defun filter-excluded (excluded-modules modules)
-  (clj:-> (lambda (module) (not (lists:member module excluded-modules)))
-          (lists:filter modules)))
+  (-> (lambda (module) (not (lists:member module excluded-modules)))
+      (lists:filter modules)))
 
 (defun flatten
   ([lines] (when (is_list lines))
    (iolist_to_binary (lists:map (lambda (line) (list line #"\n")) lines)))
   ([bin] bin))
+
+;;; ==================================================================== [ EOF ]

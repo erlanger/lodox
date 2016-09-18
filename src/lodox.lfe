@@ -1,3 +1,5 @@
+;;; ============================================================== [ lodox.lfe ]
+
 (defmodule lodox
   "The Lodox [Rebar3][1] [provider][2].
 
@@ -27,10 +29,7 @@
   "The description for the task, used by `rebar3 help`."
   (short-desc))
 
-
-;;;===================================================================
-;;; API
-;;;===================================================================
+;;; ==================================================================== [ API ]
 
 (defun init (state)
   "Initiate the Lodox provider."
@@ -65,10 +64,7 @@
   so a string can be formatted explaining the issue."
   (io_lib:format "~p" `[,reason]))
 
-
-;;;===================================================================
-;;; Internal functions
-;;;===================================================================
+;;; ===================================================== [ Internal functions ]
 
 (defun write-docs (app-info)
   "Given an [app_info_t], call [[lodox-html-writer:write-docs/1]] appropriately.
@@ -107,3 +103,5 @@
 (defun maybe-default (key value opts)
   "Prepend `` `#(,key ,value) `` to `opts` iff `key` is not already defined."
   (if (proplists:is_defined key opts) opts (cons `#(,key ,value) opts)))
+
+;;; ==================================================================== [ EOF ]

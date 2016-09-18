@@ -1,3 +1,5 @@
+;;; ======================================================= [ lodox-search.lfe ]
+
 (defmodule lodox-search
   "Doc-searching functions."
   (export (exports 2) (exports 3))
@@ -5,6 +7,8 @@
   (import (rename erlang
             ((atom_to_list    1) atom->string)
             ((integer_to_list 1) int->string))))
+
+;;; ==================================================================== [ API ]
 
 (defun exports (modules partial-name)
   "Find the best-matching function or macro.
@@ -33,10 +37,7 @@
      ((clj:nil? matches)        'undefined)
      ('true                     (car matches)))))
 
-
-;;;===================================================================
-;;; Internal functions
-;;;===================================================================
+;;; ===================================================== [ Internal functions ]
 
 (defun exports (modules)
   (lc ((<- mod modules) (<- export (get mod 'exports)))
@@ -52,3 +53,5 @@
   (lists:takewhile (lambda (c) (=/= c #\:)) export-name))
 
 (defun get (plist key) (proplists:get_value key plist))
+
+;;; ==================================================================== [ EOF ]

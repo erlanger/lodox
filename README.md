@@ -94,7 +94,7 @@ function/macro's source file in the documentation, you can set the
   {apps, [
     {my_app, [
       {'source-uri', "https://github.com/user/my_app/blob/{version}/{filepath}#L{line}"},
-      {'output-path', "doc"}
+      {'output-path', "docs"}
     ]}
   ]}
 ]}.

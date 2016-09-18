@@ -1,8 +1,5 @@
 (defmodule unit-lodox-tests
-  (behaviour ltest-unit)
-  (export (projects_shapes_test_ 0)
-          (modules_shapes_test_  0)
-          (exports_shapes_test_  0)))
+  "Lodox unit tests.")
 
 (include-lib "ltest/include/ltest-macros.lfe")
 
