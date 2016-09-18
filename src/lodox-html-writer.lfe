@@ -330,8 +330,7 @@
        (let ((html (-> (proplists:get_value 'content doc)
                        (unicode:characters_to_list)
                        (markdown->html))))
-         ;; (format-wikilinks app html 'undefined)
-         html)))))
+         (format-wikilinks app html 'undefined))))))
 
 (defun document-page (app doc)
   (html
