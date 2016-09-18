@@ -10,7 +10,7 @@
   {licenses,     ["MIT"]},
   {links, [
     {"GitHub",        "https://github.com/lfe-rebar3/lodox"},
-    {"Documentation", "http://lfe-rebar3.github.io/lodox"}
+    {"Documentation", "https://lfe-rebar3.github.io/lodox"}
   ]},
   {files, ["src", "rebar.*", "README.md", "LICENSE", "resources"]}
 ]}.
