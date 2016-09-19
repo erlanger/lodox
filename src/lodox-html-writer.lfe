@@ -130,10 +130,16 @@
 (defun mod-name (mod) (atom->string (proplists:get_value 'name mod)))
 
 (defun doc-filename (doc)
-  (++ (proplists:get_value 'name doc) ".html"))
+  (doc-filename "" doc))
+
+(defun doc-filename (prefix doc)
+  (++ prefix (proplists:get_value 'name doc) ".html"))
 
 (defun doc-filepath (output-dir doc)
-  (filename:join output-dir (doc-filename doc)))
+  (doc-filepath output-dir "" doc))
+
+(defun doc-filepath (output-dir prefix doc)
+  (filename:join output-dir (doc-filename prefix doc)))
 
 (defun export-uri (module export)
   (++ (mod-filename module) "#" (export-id export)))
@@ -165,7 +171,7 @@
          (lc ((<- doc docs))
            (li `[class ,(cond-> "depth-1"
                           (=:= doc current-doc) (++ " current"))]
-               (link-to (doc-filename doc)
+               (link-to (doc-filename "topic-" doc)
                  (div '[class "inner"]
                    (span (h (proplists:get_value 'title doc))))))))))))
 
@@ -292,7 +298,7 @@
                    (h2 "Topics")
                    (ul '[class "topics"]
                      (lc ((<- doc docs))
-                       (li (link-to (doc-filename doc)
+                       (li (link-to (doc-filename "topic-" doc)
                              (h (proplists:get_value 'title doc)))))))))
               (h2 "Modules")
               (lists:map
@@ -452,7 +458,7 @@ for each `dir` in `dirs`."
     (lambda (document)
       ;; TODO
       ;; (file:write_file (transform-html app (document-page app document)))
-      (file:write_file (doc-filepath output-dir document)
+      (file:write_file (doc-filepath output-dir "topic-" document)
                        (document-page app document)))
     (proplists:get_value 'documents app [])))
 
