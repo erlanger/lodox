@@ -3,8 +3,7 @@
 (defmodule lodox-search
   "Doc-searching functions."
   (export (exports 2) (exports 3))
-  (import (from lodox-html-writer (escape-html 1))
-          (rename erlang
+  (import (rename erlang
             ((atom_to_list    1) atom->string)
             ((integer_to_list 1) int->string))))
 
@@ -28,7 +27,7 @@
                      (not (lists:member #\: partial-name)) (cons #\:)))
          (matches  (lists:filter
                      (lambda (export-name)
-                       (lists:suffix suffix (escape-html export-name)))
+                       (lists:suffix suffix export-name))
                      (exports modules)))
          (external (lists:dropwhile
                      (lambda (export-name)

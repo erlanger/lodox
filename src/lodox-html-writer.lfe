@@ -104,15 +104,16 @@
             (fold-replace html))))))
 
 (defun do-format-wikilinks (html init to-search)
-  (lambda (match)
-    (let ((export (lodox-search:exports to-search match init)))
-      (if-not (=:= 'undefined export)
-        (let ((`#(,mod [,_ . ,fname])
-               (lists:splitwith (lambda (c) (=/= c #\:)) export)))
-          `#(true #(,(re-escape (++ "[[" match "]]"))
-                    ,(link-to (export-uri mod fname)
-                       (cond->> fname
-                         (=/= (atom->string init) mod) (++ mod ":"))))))))))
+  (match-lambda
+    ([`(,match)]
+     (let ((export (lodox-search:exports to-search match init)))
+       (if-not (=:= 'undefined export)
+         (let ((`#(,mod [,_ . ,fname])
+                (lists:splitwith (lambda (c) (=/= c #\:)) export)))
+           `#(true #(,(re-escape (++ "[[" match "]]"))
+                     ,(link-to (export-uri mod fname)
+                        (cond->> fname
+                          (=/= (atom->string init) mod) (++ mod ":")))))))))))
 
 (defun index-by (k plists)
   (-> (lambda (p pp) (-> (proplists:get_value k p) (tuple p) (cons pp)))
