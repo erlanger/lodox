@@ -171,7 +171,7 @@
           ],
           "name": "docs",
           "arity": 2,
-          "doc": "Given an app-name (binary), return a proplist like:\n\n```commonlisp\n[#(name        #\"lodox\")\n #(version     \"0.16.2\")\n #(description \"The LFE rebar3 Lodox plugin\")\n #(documents   [])\n #(modules     {{list of proplists of module metadata}})\n #(documented  {{ see documented/1 }})]\n```\n",
+          "doc": "Given an app-name (binary), return a proplist like:\n\n```commonlisp\n[#(name        #\"lodox\")\n #(version     \"0.16.3\")\n #(description \"The LFE rebar3 Lodox plugin\")\n #(documents   [])\n #(modules     {{list of proplists of module metadata}})\n #(documented  {{ see documented/1 }})]\n```\n",
           "line": 20
         },
         {
@@ -191,7 +191,7 @@
     }
   ],
   "name": "lodox",
-  "version": "0.16.2",
+  "version": "0.16.3",
   "description": "The LFE rebar3 Lodox plugin.",
   "documents": [],
   "libs": [],

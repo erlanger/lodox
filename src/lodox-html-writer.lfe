@@ -77,13 +77,12 @@
        ('plaintext
         (pre '[class "plaintext"] (h doc)))
        ('markdown (when (is_list mod))
-        (let ((name (proplists:get_value 'name mod))
-              (html (markdown->html (unicode:characters_to_list doc))))
-          (format-wikilinks app html name)))
+        (format-md-docstring app (proplists:get_value 'name mod) doc))
        ('markdown
-        (let ((name (proplists:get_value 'name def))
-              (html (markdown->html (unicode:characters_to_list doc))))
-          (format-wikilinks app html name)))))))
+        (format-md-docstring app (proplists:get_value 'name def) doc))))))
+
+(defun format-md-docstring (app name doc)
+  (markdown->html (format-wikilinks app (unicode:characters_to_list doc) name)))
 
 (defun markdown->html (markdown)
   "Given a Markdown string, convert it to HTML, using [pandoc].
