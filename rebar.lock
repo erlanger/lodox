@@ -5,7 +5,7 @@
   2},
  {<<"exemplar">>,
   {git,"git://github.com/yurrriq/exemplar.git",
-       {ref,"4f14ab3cd595dd34edfe08bf01ea4667860d6f36"}},
+       {ref,"673b87ae0e004e955ae35f100ed90ad4ef218930"}},
   0},
  {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.0">>},0},
  {<<"kla">>,
@@ -23,7 +23,7 @@
   4},
  {<<"lutil">>,
   {git,"git://github.com/lfex/lutil.git",
-       {ref,"0ee02e01d643caba7a0b8365c477aea8d92bf309"}},
+       {ref,"1132c09949d22fcbd413b6a779bcb40a629c44d3"}},
   1}]}.
 [
 {pkg_hash,[
