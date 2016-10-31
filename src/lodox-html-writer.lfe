@@ -56,7 +56,7 @@
   (a `[href ,uri] content))
 
 (defun export-id (export)
-  (if (clj-p:string? export)
+  (if (clj:string? export)
     (-> (http_uri:encode export)
         (re:replace "%" "." '[global #(return list)])
         (->> (++ "export-")))
@@ -119,7 +119,7 @@
       (lists:foldl [] plists)))
 
 (defun mod-filename (mod)
-  (if (clj-p:string? mod)
+  (if (clj:string? mod)
     (++ mod ".html")
     (mod-filename (mod-name mod))))
 

@@ -9,7 +9,7 @@
 ;; EUnit gets very upset if the following _ is a -.
 (defun validate_project (dir project)
   `[#(#"project is a proplist"
-      ,(is* (clj-p:proplist? project)))
+      ,(is* (clj:proplist? project)))
     #(#"description is a binary"
       ,(is* (is_binary (get* project 'description))))
     #(#"libs is a list"
@@ -26,7 +26,7 @@
 
 (defun validate_module (module)
   `[#(#"module is a proplist"
-      ,(is* (clj-p:proplist? module)))
+      ,(is* (clj:proplist? module)))
     #(#"module has correct keys"
       ,(is-equal* '(behaviour doc exports filepath name)
                   (lists:sort (proplists:get_keys module))))
@@ -46,7 +46,7 @@
 
 (defun validate_exports (exports)
   `[#(#"exports is a proplist"
-      ,(is* (clj-p:proplist? exports)))
+      ,(is* (clj:proplist? exports)))
     #(#"exports has correct keys"
       ,(is-equal* '(arity doc line name patterns)
                   (lists:sort (proplists:get_keys exports))))
