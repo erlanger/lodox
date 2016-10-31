@@ -1,9 +1,6 @@
 {application,    lodox, [
   {description,  "The LFE rebar3 Lodox plugin."},
   {vsn,          "0.16.3"},
-  {modules,      [lodox,
-                  'lodox-html-writer', 'lodox-json-writer',
-                  'lodox-parse', 'lodox-search', 'unit-lodox-tests']},
   {applications, [kernel, stdlib, lfe, exemplar, levaindoc, jsx]},
 
   {maintainers,  ["Eric Bailey"]},
