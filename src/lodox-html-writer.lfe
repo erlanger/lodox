@@ -469,7 +469,7 @@ for each `dir` in `dirs`."
     (proplists:get_value 'libs app)))
 
 (defun write-undocumented (output-dir app)
-  (let ((undocumented (clj-seq:get-in app '[documented undocumented]))
+  (let ((undocumented (clj:get-in app '[documented undocumented]))
         (output-file  (filename:join output-dir "undocumented.txt"))
         (collect      (match-lambda
                         ([`#(,_mod []) acc] acc)
